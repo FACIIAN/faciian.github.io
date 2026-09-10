@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FCIIN.io</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1B1B1B;
+    --card-border: #2F7A72;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    position: relative;
+    margin: 0;
+    color: var(--ink);
+    font-family: 'Work Sans', sans-serif;
+    padding: 60px 24px 96px;
+    background-color: #EDEEF3;
+    transition: background-color 0.15s linear;
+  }
+
+  header {
+    position: relative;
+    text-align: center;
+    margin-bottom: 64px;
+  }
+
+  /* --- lámpara colgante --- */
+
+  .lamp-anchor {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 0;
+    height: 0;
+  }
+
+  .lamp {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 78px;
+    margin-left: -1px;
+    background: var(--ink);
+    transform-origin: top center;
+    z-index: 5;
+  }
+
+  .bulb-wrap {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: grab;
+    padding: 6px 14px 14px;
+    touch-action: none;
+  }
+
+  .bulb-wrap:active {
+    cursor: grabbing;
+  }
+
+  .bulb-cap {
+    width: 10px;
+    height: 7px;
+    margin: 0 auto;
+    background: #8b8b8b;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .bulb-glass {
+    width: 26px;
+    height: 30px;
+    margin-top: -1px;
+    border-radius: 50% 50% 45% 45%;
+    border: 2px solid #9a9a9a;
+    background: transparent;
+    transition: background-color 0.08s ease, border-color 0.08s ease, box-shadow 0.08s ease;
+  }
+
+  body.lamp-on .bulb-glass {
+    background: #FFD966;
+    border-color: #C99A2E;
+    box-shadow: 0 0 16px 6px rgba(255, 214, 102, 0.85);
+  }
+
+  .light-cone {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 210px;
+    height: 150px;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%);
+    background: linear-gradient(to bottom,
+      rgba(255, 224, 140, 0.95) 0%,
+      rgba(255, 221, 130, 0.75) 50%,
+      rgba(255, 221, 130, 0.4) 100%);
+    transition: opacity 0.25s ease;
+  }
+
+  body.lamp-on .light-cone {
+    opacity: 1;
+  }
+
+  .logo-row {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: clamp(42px, 8vw, 78px);
+    margin-top: 148px;
+  }
+
+  .logo {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 1em;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+
+  /* the clock replaces the "." in FCIIN.io */
+  .clock {
+    position: relative;
+    width: 0.62em;
+    height: 0.62em;
+    border-radius: 50%;
+    background: #fff;
+    border: 4px solid var(--ink);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .clock .hand {
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    transform-origin: 50% 100%;
+    background: var(--ink);
+    border-radius: 4px;
+  }
+
+  .clock .hand.hour {
+    width: 9%;
+    height: 26%;
+    margin-left: -4.5%;
+  }
+
+  .clock .hand.minute {
+    width: 6%;
+    height: 38%;
+    margin-left: -3%;
+    background: #E8604C;
+  }
+
+  .clock .pin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12%;
+    height: 12%;
+    margin: -6% 0 0 -6%;
+    background: var(--ink);
+    border-radius: 50%;
+  }
+
+  .tagline {
+    margin-top: 14px;
+    font-size: 18px;
+    color: var(--ink);
+    opacity: 0.6;
+    font-weight: 500;
+  }
+
+  .grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: 800px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 540px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    display: block;
+    background: #fff;
+    border: 2px solid var(--card-border);
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: var(--ink);
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .card:hover, .card:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+
+  .card-image {
+    width: 100%;
+    height: 150px;
+    background: #F4F4F4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .card-image .placeholder {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 13px;
+    color: #9a9a9a;
+  }
+
+  .card-title {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    text-align: center;
+    padding: 14px 12px;
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="lamp-anchor" id="lampAnchor"></div>
+    <div class="lamp" id="lamp">
+      <div class="bulb-wrap" id="bulbWrap">
+        <div class="bulb-cap"></div>
+        <div class="bulb-glass" id="bulbGlass"></div>
+      </div>
+      <div class="light-cone"></div>
+    </div>
+    <div class="logo-row">
+      <h1 class="logo">FCIIN</h1>
+      <div class="clock" id="clock">
+        <div class="hand hour" id="hourHand"></div>
+        <div class="hand minute" id="minuteHand"></div>
+        <div class="pin"></div>
+      </div>
+      <h1 class="logo">io</h1>
+    </div>
+    <p class="tagline">games and stuff made by FCIIN</p>
+  </header>
+
+  <main class="grid">
+    <a class="card" href="veoveo/" target="_blank" rel="noopener">
+      <div class="card-image">
+        <!-- Sustituye esto por tu imagen: sube un archivo llamado veoveo-thumb.png a la raíz del repo -->
+        <img src="veoveo-thumb.png" alt="Veo o Veo" onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='block';">
+        <span class="placeholder" style="display:none;">Sube veoveo-thumb.png</span>
+      </div>
+      <div class="card-title">Veo o Veo</div>
+    </a>
+  </main>
+
+<script>
+(function() {
+  const clock = document.getElementById('clock');
+  const hourHand = document.getElementById('hourHand');
+  const minuteHand = document.getElementById('minuteHand');
+
+  // --- Hora real al cargar la página ---
+  const now = new Date();
+  const startHours = now.getHours();
+  const startMinutes = now.getMinutes();
+  const startSeconds = now.getSeconds();
+
+  let minuteAngle = (startMinutes + startSeconds / 60) * 6;   // 0-360
+  let hourAngle = ((startHours % 12) + startMinutes / 60) * 30; // 0-360
+
+  // total de minutos transcurridos desde medianoche, para el fondo día/noche
+  let simulatedMinutesSinceMidnight = startHours * 60 + startMinutes + startSeconds / 60;
+
+  let previousCursorAngle = null;
+
+  function applyHands() {
+    hourHand.style.transform = 'rotate(' + hourAngle + 'deg)';
+    minuteHand.style.transform = 'rotate(' + minuteAngle + 'deg)';
+  }
+
+  function applyBackground() {
+    const hourOfDay = (simulatedMinutesSinceMidnight / 60) % 24;
+    const normalizedHour = ((hourOfDay % 24) + 24) % 24;
+    // brillo: 1 = mediodía, 0 = medianoche
+    const brightness = (Math.cos(((normalizedHour - 12) / 12) * Math.PI) + 1) / 2;
+
+    const night = [16, 19, 33];   // #10131C aprox
+    const day = [237, 238, 243];  // #EDEEF3
+
+    const r = Math.round(night[0] + (day[0] - night[0]) * brightness);
+    const g = Math.round(night[1] + (day[1] - night[1]) * brightness);
+    const b = Math.round(night[2] + (day[2] - night[2]) * brightness);
+
+    document.body.style.backgroundColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+
+    updateLampState(brightness);
+  }
+
+  // --- Bombilla: encendido/apagado según brillo ---
+  const NIGHT_THRESHOLD = 0.35;
+  let isNight = false;
+  let blinkTimeoutIds = [];
+
+  function setBulbVisual(on) {
+    document.body.classList.toggle('lamp-on', on);
+  }
+
+  function clearBlinkTimeouts() {
+    blinkTimeoutIds.forEach(clearTimeout);
+    blinkTimeoutIds = [];
+  }
+
+  function startBlinkSequence() {
+    clearBlinkTimeouts();
+    const sequence = [
+      [true, 0],
+      [false, 120],
+      [true, 180],
+      [false, 100],
+      [true, 220]
+    ];
+    let delay = 0;
+    sequence.forEach(function(step) {
+      delay += step[1];
+      blinkTimeoutIds.push(setTimeout(function() { setBulbVisual(step[0]); }, delay));
+    });
+  }
+
+  function updateLampState(brightness) {
+    const nowIsNight = brightness < NIGHT_THRESHOLD;
+    if (nowIsNight && !isNight) {
+      isNight = true;
+      startBlinkSequence();
+    } else if (!nowIsNight && isNight) {
+      isNight = false;
+      clearBlinkTimeouts();
+      setBulbVisual(false);
+    }
+  }
+
+  // parpadeo periódico cada 30s mientras es de noche
+  setInterval(function() {
+    if (isNight) {
+      setBulbVisual(false);
+      setTimeout(function() { if (isNight) setBulbVisual(true); }, 400);
+    }
+  }, 30000);
+
+  applyHands();
+  applyBackground();
+
+  // --- Péndulo de la bombilla con física ---
+  const lamp = document.getElementById('lamp');
+  const lampAnchor = document.getElementById('lampAnchor');
+  const bulbWrap = document.getElementById('bulbWrap');
+
+  const WIRE_LEN = 78;       // px, largo del cable
+  const GRAVITY = 1600;      // fuerza de gravedad simulada
+  const DAMPING = 1.1;       // rozamiento del aire
+  const MAX_ANGLE = 1.3;     // radianes (~75°), límite al arrastrar
+
+  let angle = 0;             // radianes, 0 = colgando recto
+  let angularVelocity = 0;
+  let isDragging = false;
+  let lastDragAngle = 0;
+  let lastDragTime = 0;
+  let lastFrameTime = null;
+
+  function renderLamp() {
+    lamp.style.transform = 'rotate(' + (angle * 180 / Math.PI) + 'deg)';
+  }
+
+  function getAnchorPoint() {
+    const rect = lampAnchor.getBoundingClientRect();
+    return { x: rect.left, y: rect.top };
+  }
+
+  function angleFromPointer(clientX, clientY) {
+    const anchor = getAnchorPoint();
+    const dx = clientX - anchor.x;
+    const dy = clientY - anchor.y;
+    let a = Math.atan2(-dx, dy); // 0 = hacia abajo, +derecha, -izquierda
+    if (a > MAX_ANGLE) a = MAX_ANGLE;
+    if (a < -MAX_ANGLE) a = -MAX_ANGLE;
+    return a;
+  }
+
+  function startDrag(clientX, clientY) {
+    isDragging = true;
+    angularVelocity = 0;
+    angle = angleFromPointer(clientX, clientY);
+    lastDragAngle = angle;
+    lastDragTime = performance.now();
+    renderLamp();
+  }
+
+  function moveDrag(clientX, clientY) {
+    if (!isDragging) return;
+    const now = performance.now();
+    const newAngle = angleFromPointer(clientX, clientY);
+    const dt = Math.max((now - lastDragTime) / 1000, 0.001);
+    angularVelocity = (newAngle - lastDragAngle) / dt;
+    angle = newAngle;
+    lastDragAngle = newAngle;
+    lastDragTime = now;
+    renderLamp();
+  }
+
+  function endDrag() {
+    isDragging = false;
+  }
+
+  bulbWrap.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    startDrag(e.clientX, e.clientY);
+  });
+  document.addEventListener('mousemove', function(e) {
+    moveDrag(e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseup', endDrag);
+
+  bulbWrap.addEventListener('touchstart', function(e) {
+    const t = e.touches[0];
+    startDrag(t.clientX, t.clientY);
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    const t = e.touches[0];
+    moveDrag(t.clientX, t.clientY);
+  }, { passive: true });
+  document.addEventListener('touchend', endDrag);
+
+  function physicsTick(timestamp) {
+    if (lastFrameTime === null) lastFrameTime = timestamp;
+    const dt = Math.min((timestamp - lastFrameTime) / 1000, 0.05);
+    lastFrameTime = timestamp;
+
+    if (!isDragging) {
+      const angularAcceleration = -(GRAVITY / WIRE_LEN) * Math.sin(angle) - DAMPING * angularVelocity;
+      angularVelocity += angularAcceleration * dt;
+      angle += angularVelocity * dt;
+      renderLamp();
+    }
+
+    requestAnimationFrame(physicsTick);
+  }
+  requestAnimationFrame(physicsTick);
+
+  document.addEventListener('mousemove', function(e) {
+    const rect = clock.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+
+    // ángulo respecto a las 12 en punto (arriba), sentido horario
+    let angle = Math.atan2(dx, -dy) * (180 / Math.PI);
+    if (angle < 0) angle += 360;
+
+    if (previousCursorAngle !== null) {
+      let delta = angle - previousCursorAngle;
+      // tomar el camino más corto (-180 a 180) para saber si giró horario o antihorario
+      if (delta > 180) delta -= 360;
+      if (delta < -180) delta += 360;
+
+      // el minutero sigue directamente al cursor
+      minuteAngle = angle;
+
+      // cada vuelta completa del minutero = 1 hora en la aguja de horas
+      hourAngle = (hourAngle + delta / 12 + 360) % 360;
+
+      // avanzamos/retrocedemos el reloj simulado para el fondo
+      simulatedMinutesSinceMidnight += delta / 6;
+
+      applyHands();
+      applyBackground();
+    }
+
+    previousCursorAngle = angle;
+  });
+})();
+</script>
+
+</body>
+</html>
