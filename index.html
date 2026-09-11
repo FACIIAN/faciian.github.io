@@ -55,7 +55,7 @@
     margin-left: -1px;
     background: var(--ink);
     transform-origin: top center;
-    z-index: 5;
+    z-index: 20;
   }
 
   .bulb-wrap {
@@ -96,23 +96,24 @@
     box-shadow: 0 0 16px 6px rgba(255, 214, 102, 0.85);
   }
 
-  /* Haz de luz: triángulo perfecto apuntando según el balanceo */
+  /* Haz de luz: Triángulo perfecto proyectado directamente sobre la capa superior */
   .light-cone {
     position: absolute;
-    top: 114px;
+    top: 78px;
     left: 50%;
-    width: 260px;
-    height: 220px;
-    margin-left: -130px;
-    transform-origin: 50% -114px;
+    width: 340px;
+    height: 280px;
+    margin-left: -170px;
+    transform-origin: 50% -78px;
     pointer-events: none;
     opacity: 0;
-    z-index: 3;
-    clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%);
+    z-index: 10;
+    mix-blend-mode: screen; /* Ilumina limpiamente texto y fondo por donde pasa */
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
     background: linear-gradient(to bottom,
-      rgba(255, 230, 160, 0.95) 0%,
-      rgba(255, 215, 100, 0.5) 50%,
-      rgba(255, 180, 50, 0) 100%);
+      rgba(255, 230, 130, 0.95) 0%,
+      rgba(255, 195, 65, 0.6) 60%,
+      rgba(255, 160, 30, 0.05) 100%);
     transition: opacity 0.15s ease;
   }
 
@@ -123,42 +124,6 @@
   .lamp.broken {
     height: 20px;
   }
-
-  /* Copia brillante del título (Alineación perfecta 1:1) */
-  .logo-glow {
-    position: fixed;
-    margin: 0;
-    padding: 0;
-    pointer-events: none;
-    z-index: 4;
-    color: #FFDE8A;
-    text-shadow: 0 0 14px rgba(255, 214, 102, 0.9), 0 0 28px rgba(255, 214, 102, 0.5);
-    font-family: 'Baloo 2', sans-serif;
-    font-weight: 800;
-    letter-spacing: 1px;
-    line-height: 1;
-    clip-path: inset(0 0 100% 0);
-  }
-
-  /* Mensajes escondidos a los lados */
-  .side-joke {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-family: 'Baloo 2', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    color: #FFDE8A;
-    text-shadow: 0 0 10px rgba(255, 214, 102, 0.9);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 4;
-    white-space: nowrap;
-    transition: opacity 0.1s ease;
-  }
-
-  #sideJokeLeft { right: 100%; margin-right: 14px; }
-  #sideJokeRight { left: 100%; margin-left: 14px; }
 
   .falling-bulb {
     position: absolute;
@@ -176,13 +141,13 @@
     background: var(--ink);
   }
 
-  /* Monigote */
+  /* Monigote con cabeza de bombilla */
   .walker {
     position: absolute;
     top: 0;
     left: -40px;
-    width: 24px;
-    height: 36px;
+    width: 26px;
+    height: 42px;
     z-index: 60;
     display: none;
   }
@@ -204,6 +169,7 @@
     50% { transform: rotate(-22deg); }
   }
 
+  /* Título principal */
   .logo-row {
     position: relative;
     z-index: 1;
@@ -213,6 +179,12 @@
     gap: 6px;
     font-size: clamp(42px, 8vw, 78px);
     margin-top: 148px;
+    transition: color 0.3s ease;
+  }
+
+  /* De noche el texto adopta un tono oscuro penumbra que resalta al recibir luz */
+  body.lamp-on .logo-row {
+    color: #454958;
   }
 
   .logo {
@@ -224,7 +196,7 @@
     line-height: 1;
   }
 
-  /* Reloj exacto original */
+  /* Reloj original exacto */
   .clock {
     position: relative;
     width: 0.62em;
@@ -370,7 +342,6 @@
     </div>
     <div class="light-cone" id="lightCone"></div>
     <div class="logo-row">
-      <span class="side-joke" id="sideJokeLeft">psst</span>
       <h1 class="logo">FCIIN</h1>
       <div class="clock" id="clock">
         <div class="hand hour" id="hourHand"></div>
@@ -378,7 +349,6 @@
         <div class="pin"></div>
       </div>
       <h1 class="logo">io</h1>
-      <span class="side-joke" id="sideJokeRight">¡boo!</span>
     </div>
     <p class="tagline">games and stuff made by FCIIN</p>
   </header>
@@ -407,14 +377,19 @@
     <div class="bulb-glass"></div>
   </div>
 
+  <!-- Monigote con cabeza de bombilla -->
   <div class="walker" id="walker">
-    <svg viewBox="0 0 24 36">
-      <circle cx="12" cy="6" r="5" fill="#1B1B1B"></circle>
-      <line x1="12" y1="11" x2="12" y2="24" stroke="#1B1B1B" stroke-width="2"></line>
-      <line x1="12" y1="15" x2="6" y2="20" stroke="#1B1B1B" stroke-width="2"></line>
-      <line x1="12" y1="15" x2="18" y2="20" stroke="#1B1B1B" stroke-width="2"></line>
-      <line class="leg-a" x1="12" y1="24" x2="7" y2="34" stroke="#1B1B1B" stroke-width="2"></line>
-      <line class="leg-b" x1="12" y1="24" x2="17" y2="34" stroke="#1B1B1B" stroke-width="2"></line>
+    <svg viewBox="0 0 24 42">
+      <!-- Cabeza Bombilla -->
+      <path d="M 7,7 C 7,3 17,3 17,7 C 17,9.5 15,11 14.5,12 L 9.5,12 C 9,11 7,9.5 7,7 Z" fill="#FFD966" stroke="#1B1B1B" stroke-width="1.5"></path>
+      <rect x="9.5" y="12" width="5" height="2.5" fill="#8B8B8B" stroke="#1B1B1B" stroke-width="0.8"></rect>
+      <circle cx="12" cy="7" r="1.5" fill="#C99A2E"></circle>
+      <!-- Cuerpo -->
+      <line x1="12" y1="14.5" x2="12" y2="26" stroke="#1B1B1B" stroke-width="2"></line>
+      <line x1="12" y1="17.5" x2="5" y2="22.5" stroke="#1B1B1B" stroke-width="2"></line>
+      <line x1="12" y1="17.5" x2="19" y2="22.5" stroke="#1B1B1B" stroke-width="2"></line>
+      <line class="leg-a" x1="12" y1="26" x2="6" y2="38" stroke="#1B1B1B" stroke-width="2"></line>
+      <line class="leg-b" x1="12" y1="26" x2="18" y2="38" stroke="#1B1B1B" stroke-width="2"></line>
     </svg>
   </div>
 
@@ -463,7 +438,7 @@
   let blinkTimeoutIds = [];
 
   function setBulbVisual(on) {
-    if (isBroken) on = false; // Bloqueo: si está rota, se apaga totalmente
+    if (isBroken) on = false;
     document.body.classList.toggle('lamp-on', on);
   }
 
@@ -524,7 +499,7 @@
   const DAMPING = 1.1;
   const MAX_ANGLE = 1.3;
   const BREAK_SPEED = 9;
-  const WALL_MARGIN = 24;
+  const WALL_MARGIN = 20; // Límite lateral de la pantalla
   const FALL_GRAVITY = 2200;
   const BULB_TOTAL_H = 53;
   const BULB_W = 26;
@@ -600,11 +575,15 @@
     setBulbVisual(false);
 
     const anchor = getAnchorPoint();
-    const breakX = anchor.x - WIRE_LEN * Math.sin(angle) + window.scrollX;
-    const breakY = anchor.y + WIRE_LEN * Math.cos(angle) + window.scrollY;
+    let breakX = anchor.x - WIRE_LEN * Math.sin(angle) + window.scrollX;
+    let breakY = anchor.y + WIRE_LEN * Math.cos(angle) + window.scrollY;
 
-    const vx = angularVelocity * WIRE_LEN * -Math.cos(angle);
-    const vy = angularVelocity * WIRE_LEN * -Math.sin(angle);
+    // Contención: evitar que la rotura empiece fuera de la ventana
+    const maxMargin = window.innerWidth - WALL_MARGIN - BULB_W;
+    breakX = Math.max(WALL_MARGIN, Math.min(maxMargin, breakX));
+
+    let vx = angularVelocity * WIRE_LEN * -Math.cos(angle);
+    let vy = angularVelocity * WIRE_LEN * -Math.sin(angle);
 
     angle = 0;
     angularVelocity = 0;
@@ -649,65 +628,11 @@
       renderLamp();
     }
 
-    updateTitleGlow();
     requestAnimationFrame(physicsTick);
   }
   requestAnimationFrame(physicsTick);
 
-  /* --- Sistema de iluminación sobre el título --- */
-  const glowPairs = Array.prototype.map.call(document.querySelectorAll('.logo'), function(el) {
-    const glow = el.cloneNode(true);
-    glow.classList.add('logo-glow');
-    glow.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(glow);
-    return { original: el, glow: glow };
-  });
-
-  const sideJokeLeft = document.getElementById('sideJokeLeft');
-  const sideJokeRight = document.getElementById('sideJokeRight');
-
-  function updateTitleGlow() {
-    const lit = document.body.classList.contains('lamp-on') && !isBroken;
-    const coneRect = lit ? lightCone.getBoundingClientRect() : null;
-
-    glowPairs.forEach(function(pair) {
-      const rect = pair.original.getBoundingClientRect();
-      pair.glow.style.left = rect.left + 'px';
-      pair.glow.style.top = rect.top + 'px';
-      pair.glow.style.fontSize = window.getComputedStyle(pair.original).fontSize;
-
-      if (!lit) {
-        pair.glow.style.clipPath = 'inset(0 0 100% 0)';
-        return;
-      }
-
-      const left = Math.max(rect.left, coneRect.left);
-      const right = Math.min(rect.right, coneRect.right);
-      const top = Math.max(rect.top, coneRect.top);
-      const bottom = Math.min(rect.bottom, coneRect.bottom);
-
-      if (right <= left || bottom <= top) {
-        pair.glow.style.clipPath = 'inset(0 0 100% 0)';
-        return;
-      }
-
-      const insetTop = top - rect.top;
-      const insetRight = rect.right - right;
-      const insetBottom = rect.bottom - bottom;
-      const insetLeft = left - rect.left;
-
-      pair.glow.style.clipPath = 'inset(' + insetTop + 'px ' + insetRight + 'px ' + insetBottom + 'px ' + insetLeft + 'px)';
-    });
-
-    [sideJokeLeft, sideJokeRight].forEach(function(el) {
-      if (!lit) { el.style.opacity = 0; return; }
-      const r = el.getBoundingClientRect();
-      const overlaps = !(r.right < coneRect.left || r.left > coneRect.right || r.bottom < coneRect.top || r.top > coneRect.bottom);
-      el.style.opacity = overlaps ? 1 : 0;
-    });
-  }
-
-  /* --- Caída de la bombilla al suelo total de la web --- */
+  /* --- Caída con rebote en paredes --- */
   let fallX = 0, fallY = 0, fallVX = 0, fallVY = 0;
   let fallLanded = false;
   let lastFallTime = null;
@@ -721,7 +646,6 @@
     fallLanded = false;
     lastFallTime = null;
 
-    // Calcula la altura total de la web al romper (sin crear bucle infinito)
     pageFloor = Math.max(
       document.body.scrollHeight,
       document.documentElement.scrollHeight,
@@ -747,6 +671,18 @@
     fallX += fallVX * dt;
     fallY += fallVY * dt;
 
+    // Colisión con paredes laterales de la ventana
+    const minX = WALL_MARGIN;
+    const maxX = window.innerWidth - WALL_MARGIN - BULB_W;
+
+    if (fallX < minX) {
+      fallX = minX;
+      fallVX = -fallVX * 0.4; // Rebota hacia la derecha
+    } else if (fallX > maxX) {
+      fallX = maxX;
+      fallVX = -fallVX * 0.4; // Rebota hacia la izquierda
+    }
+
     if (fallY + BULB_TOTAL_H >= pageFloor - 12) {
       fallY = pageFloor - BULB_TOTAL_H - 12;
       fallVY = 0;
@@ -761,11 +697,11 @@
     requestAnimationFrame(fallTick);
   }
 
-  /* --- Monigote en el suelo --- */
+  /* --- Monigote recogedor --- */
   const walker = document.getElementById('walker');
   const WALK_SPEED = 140;
-  const WALKER_W = 24;
-  const WALKER_H = 36;
+  const WALKER_W = 26;
+  const WALKER_H = 42;
 
   let walkerX = 0;
   let walkerTargetX = 0;
@@ -780,7 +716,7 @@
 
   function positionWalker() {
     walker.style.left = walkerX + 'px';
-    walker.style.top = (pageFloor - WALKER_H - 12) + 'px'; // En el suelo absoluto de la web
+    walker.style.top = (pageFloor - WALKER_H - 12) + 'px';
   }
 
   function spawnWalker(bulbDocX) {
