@@ -27,6 +27,7 @@
     padding: 60px 24px 96px;
     background-color: #EDEEF3;
     transition: background-color 0.15s linear;
+    overflow-x: hidden; /* Evita que el monigote genere scrollbar al entrar/salir */
   }
 
   header {
@@ -35,7 +36,7 @@
     margin-bottom: 64px;
   }
 
-  /* --- lámpara colgante --- */
+  /* --- Lámpara colgante --- */
 
   .lamp-anchor {
     position: absolute;
@@ -54,7 +55,7 @@
     margin-left: -1px;
     background: var(--ink);
     transform-origin: top center;
-    z-index: 5;
+    z-index: 20;
   }
 
   .bulb-wrap {
@@ -95,31 +96,102 @@
     box-shadow: 0 0 16px 6px rgba(255, 214, 102, 0.85);
   }
 
-  /* Cono de luz proyectado ajustado como foco */
+  /* Haz de luz: Triángulo dinámico que proyecta sobre el texto */
   .light-cone {
     position: absolute;
-    top: 100%;
+    top: 110px;
     left: 50%;
-    transform: translateX(-50%);
-    width: 280px;
-    height: 190px;
+    width: 260px;
+    height: 220px;
+    margin-left: -130px;
+    transform-origin: 50% -110px;
     pointer-events: none;
     opacity: 0;
-    clip-path: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
+    z-index: 15;
+    mix-blend-mode: screen;
+    clip-path: polygon(48% 0%, 52% 0%, 100% 100%, 0% 100%);
     background: linear-gradient(to bottom,
-      rgba(255, 235, 140, 0.9) 0%,
-      rgba(255, 215, 100, 0.45) 60%,
-      rgba(255, 200, 70, 0.05) 100%);
-    transition: opacity 0.25s ease;
+      rgba(255, 235, 140, 0.95) 0%,
+      rgba(255, 200, 80, 0.5) 60%,
+      rgba(255, 180, 50, 0.05) 100%);
+    transition: opacity 0.15s ease;
   }
 
   body.lamp-on .light-cone {
     opacity: 1;
   }
 
+  .lamp.broken {
+    height: 20px;
+  }
+
+  /* Mensajes secretos */
+  .side-joke {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #FFDE8A;
+    text-shadow: 0 0 10px rgba(255, 214, 102, 0.9);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 4;
+    white-space: nowrap;
+    transition: opacity 0.1s ease;
+  }
+
+  #sideJokeLeft { right: 100%; margin-right: 14px; }
+  #sideJokeRight { left: 100%; margin-left: 14px; }
+
+  .falling-bulb {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 26px;
+    z-index: 50;
+    display: none;
+  }
+
+  .falling-bulb .broken-wire {
+    width: 2px;
+    height: 16px;
+    margin: 0 auto;
+    background: var(--ink);
+  }
+
+  /* Monigote */
+  .walker {
+    position: absolute;
+    top: 0;
+    left: -40px;
+    width: 24px;
+    height: 36px;
+    z-index: 60;
+    display: none;
+  }
+
+  .walker svg { width: 100%; height: 100%; overflow: visible; }
+  .walker .leg-a, .walker .leg-b {
+    transform-box: fill-box;
+    transform-origin: 50% 0%;
+  }
+  .walker .leg-a { animation: walk-a 0.4s linear infinite; }
+  .walker .leg-b { animation: walk-b 0.4s linear infinite; }
+
+  @keyframes walk-a {
+    0%, 100% { transform: rotate(-22deg); }
+    50% { transform: rotate(22deg); }
+  }
+  @keyframes walk-b {
+    0%, 100% { transform: rotate(22deg); }
+    50% { transform: rotate(-22deg); }
+  }
+
   .logo-row {
     position: relative;
-    z-index: 6; /* Detrás del texto */
+    z-index: 5;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -129,9 +201,9 @@
     transition: color 0.3s ease;
   }
 
-  /* Texto se oscurece por la noche */
+  /* Color nocturno sobre el que resalta la luz */
   body.lamp-on .logo-row {
-    color: #4A4F60;
+    color: #383C4A;
   }
 
   .logo {
@@ -144,15 +216,15 @@
 
   .clock {
     position: relative;
-    width: 0.5em;
-    height: 0.5em;
+    width: 0.45em;
+    height: 0.45em;
     border-radius: 50%;
     background: #fff;
-    border: 4px solid var(--ink);
+    border: 0.08em solid var(--ink);
     flex-shrink: 0;
     cursor: pointer;
-    align-self: flex-end;  
-    margin-bottom: 0.12em;
+    align-self: flex-end;
+    margin-bottom: 0.22em;
   }
 
   .clock .hand {
@@ -258,20 +330,38 @@
     text-align: center;
     padding: 14px 12px;
   }
+
+  .card.soon {
+    cursor: default;
+    border-style: dashed;
+    border-color: #c7c7c7;
+    box-shadow: none;
+  }
+  .card.soon:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .card.soon .card-image {
+    background: #FAFAFA;
+  }
+  .card.soon .card-title {
+    color: #a9a9a9;
+  }
 </style>
 </head>
 <body>
 
-  <header>
+  <header id="mainHeader">
     <div class="lamp-anchor" id="lampAnchor"></div>
     <div class="lamp" id="lamp">
       <div class="bulb-wrap" id="bulbWrap">
         <div class="bulb-cap"></div>
         <div class="bulb-glass" id="bulbGlass"></div>
       </div>
-      <div class="light-cone"></div>
     </div>
-    <div class="logo-row">
+    <div class="light-cone" id="lightCone"></div>
+    <div class="logo-row" id="logoRow">
+      <span class="side-joke" id="sideJokeLeft">psst</span>
       <h1 class="logo">FCIIN</h1>
       <div class="clock" id="clock">
         <div class="hand hour" id="hourHand"></div>
@@ -279,6 +369,7 @@
         <div class="pin"></div>
       </div>
       <h1 class="logo">io</h1>
+      <span class="side-joke" id="sideJokeRight">¡boo!</span>
     </div>
     <p class="tagline">games and stuff made by FCIIN</p>
   </header>
@@ -291,7 +382,32 @@
       </div>
       <div class="card-title">Veo o Veo</div>
     </a>
+    <div class="card soon">
+      <div class="card-image"><span class="placeholder">Próximamente</span></div>
+      <div class="card-title">Próximamente</div>
+    </div>
+    <div class="card soon">
+      <div class="card-image"><span class="placeholder">Próximamente</span></div>
+      <div class="card-title">Próximamente</div>
+    </div>
   </main>
+
+  <div class="falling-bulb" id="fallingBulb">
+    <div class="broken-wire"></div>
+    <div class="bulb-cap"></div>
+    <div class="bulb-glass"></div>
+  </div>
+
+  <div class="walker" id="walker">
+    <svg viewBox="0 0 24 36">
+      <circle cx="12" cy="6" r="5" fill="#1B1B1B"></circle>
+      <line x1="12" y1="11" x2="12" y2="24" stroke="#1B1B1B" stroke-width="2"></line>
+      <line x1="12" y1="15" x2="6" y2="20" stroke="#1B1B1B" stroke-width="2"></line>
+      <line x1="12" y1="15" x2="18" y2="20" stroke="#1B1B1B" stroke-width="2"></line>
+      <line class="leg-a" x1="12" y1="24" x2="7" y2="34" stroke="#1B1B1B" stroke-width="2"></line>
+      <line class="leg-b" x1="12" y1="24" x2="17" y2="34" stroke="#1B1B1B" stroke-width="2"></line>
+    </svg>
+  </div>
 
 <script>
 (function() {
@@ -304,9 +420,8 @@
   const startMinutes = now.getMinutes();
   const startSeconds = now.getSeconds();
 
-  let minuteAngle = (startMinutes + startSeconds / 60) * 6;  
-  let hourAngle = ((startHours % 12) + startMinutes / 60) * 30; 
-
+  let minuteAngle = (startMinutes + startSeconds / 60) * 6;
+  let hourAngle = ((startHours % 12) + startMinutes / 60) * 30;
   let simulatedMinutesSinceMidnight = startHours * 60 + startMinutes + startSeconds / 60;
   let previousCursorAngle = null;
 
@@ -335,8 +450,10 @@
   const NIGHT_THRESHOLD = 0.35;
   let isNight = false;
   let blinkTimeoutIds = [];
+  let isBroken = false;
 
   function setBulbVisual(on) {
+    if (isBroken) on = false; // Bloqueo: si está rota, nunca ilumina
     document.body.classList.toggle('lamp-on', on);
   }
 
@@ -346,6 +463,7 @@
   }
 
   function startBlinkSequence() {
+    if (isBroken) return;
     clearBlinkTimeouts();
     const sequence = [
       [true, 0],
@@ -374,24 +492,32 @@
   }
 
   setInterval(function() {
-    if (isNight) {
+    if (isNight && !isBroken) {
       setBulbVisual(false);
-      setTimeout(function() { if (isNight) setBulbVisual(true); }, 400);
+      setTimeout(function() { if (isNight && !isBroken) setBulbVisual(true); }, 400);
     }
   }, 30000);
 
   applyHands();
   applyBackground();
 
-  /* --- Péndulo de la bombilla con física --- */
+  /* --- Péndulo y física --- */
   const lamp = document.getElementById('lamp');
   const lampAnchor = document.getElementById('lampAnchor');
   const bulbWrap = document.getElementById('bulbWrap');
+  const lightCone = document.getElementById('lightCone');
+  const fallingBulb = document.getElementById('fallingBulb');
+  const logoRow = document.getElementById('logoRow');
 
   const WIRE_LEN = 78;
   const GRAVITY = 1600;
   const DAMPING = 1.1;
   const MAX_ANGLE = 1.3;
+  const BREAK_SPEED = 9;
+  const WALL_MARGIN = 24;
+  const FALL_GRAVITY = 2200;
+  const BULB_TOTAL_H = 53;
+  const BULB_W = 26;
 
   let angle = 0;
   let angularVelocity = 0;
@@ -400,26 +526,35 @@
   let lastDragTime = 0;
   let lastFrameTime = null;
 
-  function renderLamp() {
-    lamp.style.transform = 'rotate(' + (angle * 180 / Math.PI) + 'deg)';
-  }
-
   function getAnchorPoint() {
     const rect = lampAnchor.getBoundingClientRect();
     return { x: rect.left, y: rect.top };
+  }
+
+  function renderLamp() {
+    const deg = angle * 180 / Math.PI;
+    lamp.style.transform = 'rotate(' + deg + 'deg)';
+    lightCone.style.transform = 'rotate(' + deg + 'deg)';
+
+    const anchor = getAnchorPoint();
+    const bulbX = anchor.x - WIRE_LEN * Math.sin(angle);
+    if (bulbX < WALL_MARGIN || bulbX > window.innerWidth - WALL_MARGIN) {
+      breakWire();
+    }
   }
 
   function angleFromPointer(clientX, clientY) {
     const anchor = getAnchorPoint();
     const dx = clientX - anchor.x;
     const dy = clientY - anchor.y;
-    let a = Math.atan2(-dx, dy); 
+    let a = Math.atan2(-dx, dy);
     if (a > MAX_ANGLE) a = MAX_ANGLE;
     if (a < -MAX_ANGLE) a = -MAX_ANGLE;
     return a;
   }
 
   function startDrag(clientX, clientY) {
+    if (isBroken) return;
     isDragging = true;
     angularVelocity = 0;
     angle = angleFromPointer(clientX, clientY);
@@ -429,7 +564,7 @@
   }
 
   function moveDrag(clientX, clientY) {
-    if (!isDragging) return;
+    if (!isDragging || isBroken) return;
     const now = performance.now();
     const newAngle = angleFromPointer(clientX, clientY);
     const dt = Math.max((now - lastDragTime) / 1000, 0.001);
@@ -438,10 +573,38 @@
     lastDragAngle = newAngle;
     lastDragTime = now;
     renderLamp();
+
+    if (!isBroken && Math.abs(angularVelocity) > BREAK_SPEED) {
+      breakWire();
+    }
   }
 
   function endDrag() {
     isDragging = false;
+  }
+
+  function breakWire() {
+    if (isBroken) return;
+    isBroken = true;
+    isDragging = false;
+    setBulbVisual(false);
+
+    const anchor = getAnchorPoint();
+    const breakX = anchor.x - WIRE_LEN * Math.sin(angle) + window.scrollX;
+    const breakY = anchor.y + WIRE_LEN * Math.cos(angle) + window.scrollY;
+
+    const vx = angularVelocity * WIRE_LEN * -Math.cos(angle);
+    const vy = angularVelocity * WIRE_LEN * -Math.sin(angle);
+
+    angle = 0;
+    angularVelocity = 0;
+    lamp.classList.add('broken');
+    lamp.style.transform = 'rotate(0deg)';
+    bulbWrap.style.display = 'none';
+    lightCone.style.display = 'none';
+
+    fallingBulb.style.display = 'block';
+    startFall(breakX, breakY, vx, vy);
   }
 
   bulbWrap.addEventListener('mousedown', function(e) {
@@ -469,7 +632,7 @@
     const dt = Math.min((timestamp - lastFrameTime) / 1000, 0.05);
     lastFrameTime = timestamp;
 
-    if (!isDragging) {
+    if (!isDragging && !isBroken) {
       const angularAcceleration = -(GRAVITY / WIRE_LEN) * Math.sin(angle) - DAMPING * angularVelocity;
       angularVelocity += angularAcceleration * dt;
       angle += angularVelocity * dt;
@@ -480,6 +643,119 @@
   }
   requestAnimationFrame(physicsTick);
 
+  /* --- Caída de la bombilla al suelo del texto --- */
+  let fallX = 0, fallY = 0, fallVX = 0, fallVY = 0;
+  let fallLanded = false;
+  let lastFallTime = null;
+  let floorY = 0;
+
+  function startFall(x, y, vx, vy) {
+    fallX = x - BULB_W / 2;
+    fallY = y;
+    fallVX = vx;
+    fallVY = vy;
+    fallLanded = false;
+    lastFallTime = null;
+
+    // Suelo: Justo debajo de la fila del título FCIIN.io
+    const rect = logoRow.getBoundingClientRect();
+    floorY = rect.bottom + window.scrollY + 12;
+
+    positionFallingBulb();
+    requestAnimationFrame(fallTick);
+  }
+
+  function positionFallingBulb() {
+    fallingBulb.style.left = fallX + 'px';
+    fallingBulb.style.top = fallY + 'px';
+  }
+
+  function fallTick(timestamp) {
+    if (fallLanded) return;
+    if (lastFallTime === null) lastFallTime = timestamp;
+    const dt = Math.min((timestamp - lastFallTime) / 1000, 0.05);
+    lastFallTime = timestamp;
+
+    fallVY += FALL_GRAVITY * dt;
+    fallX += fallVX * dt;
+    fallY += fallVY * dt;
+
+    if (fallY + BULB_TOTAL_H >= floorY) {
+      fallY = floorY - BULB_TOTAL_H;
+      fallVY = 0;
+      fallVX = 0;
+      fallLanded = true;
+      positionFallingBulb();
+      onBulbLanded();
+      return;
+    }
+
+    positionFallingBulb();
+    requestAnimationFrame(fallTick);
+  }
+
+  /* --- Monigote recogedor --- */
+  const walker = document.getElementById('walker');
+  const WALK_SPEED = 140;
+  const WALKER_W = 24;
+  const WALKER_H = 36;
+
+  let walkerX = 0;
+  let walkerTargetX = 0;
+  let walkerPhase = null;
+  let lastWalkerTime = null;
+
+  function onBulbLanded() {
+    setTimeout(function() {
+      spawnWalker(fallX + BULB_W / 2);
+    }, 1500); // 1.5 segundos tras caer
+  }
+
+  function positionWalker() {
+    walker.style.left = walkerX + 'px';
+    walker.style.top = (floorY - WALKER_H) + 'px'; // Camina exactamente en el suelo del título
+  }
+
+  function spawnWalker(bulbDocX) {
+    walkerX = -WALKER_W - 20;
+    walker.style.display = 'block';
+    positionWalker();
+    walkerPhase = 'approach';
+    walkerTargetX = bulbDocX - WALKER_W / 2;
+    lastWalkerTime = null;
+    requestAnimationFrame(walkerTick);
+  }
+
+  function walkerTick(timestamp) {
+    if (lastWalkerTime === null) lastWalkerTime = timestamp;
+    const dt = Math.min((timestamp - lastWalkerTime) / 1000, 0.05);
+    lastWalkerTime = timestamp;
+
+    const dir = walkerTargetX >= walkerX ? 1 : -1;
+    walkerX += WALK_SPEED * dt * dir;
+    const reached = (dir > 0 && walkerX >= walkerTargetX) || (dir < 0 && walkerX <= walkerTargetX);
+
+    if (reached) {
+      walkerX = walkerTargetX;
+      positionWalker();
+
+      if (walkerPhase === 'approach') {
+        fallingBulb.style.display = 'none'; // Recoge la bombilla
+        walkerPhase = 'carry';
+        walkerTargetX = window.innerWidth + WALKER_W + 20;
+        lastWalkerTime = null;
+        requestAnimationFrame(walkerTick);
+      } else {
+        walker.style.display = 'none';
+      }
+      return;
+    }
+
+    positionWalker();
+    requestAnimationFrame(walkerTick);
+  }
+
+  /* --- Control manual del reloj --- */
   document.addEventListener('mousemove', function(e) {
     const rect = clock.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
@@ -503,6 +779,7 @@
       applyHands();
       applyBackground();
     }
+
     previousCursorAngle = angle;
   });
 })();
