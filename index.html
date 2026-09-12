@@ -3,831 +3,765 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Veo o Veo 360 · FCIIN.io</title>
+<title>FCIIN.io</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root {
-    --bg: #121316;
-    --panel: rgba(255,255,255,0.07);
-    --panel-solid: #1c1d21;
-    --border: rgba(255,255,255,0.10);
-    --text: #F4F4F2;
-    --muted: #9a9a9f;
-    --accent: #5FD1C3;
-    --accent-dim: #2F7A72;
-    --warn: #FF7A63;
-    --gold: #FFD966;
+    --ink: #1B1B1B;
+    --card-border: #2F7A72;
   }
+
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
+
+  html, body {
+    height: 100%;
+  }
+
   body {
-    background: var(--bg);
-    color: var(--text);
+    position: relative;
+    margin: 0;
+    color: var(--ink);
     font-family: 'Work Sans', sans-serif;
+    padding: 60px 24px 96px;
+    background-color: #EDEEF3;
+    transition: background-color 0.15s linear;
+    overflow-x: hidden;
+  }
+
+  header {
+    position: relative;
+    text-align: center;
+    margin-bottom: 64px;
+  }
+
+  /* --- Lámpara colgante --- */
+
+  .lamp-anchor {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 0;
+    height: 0;
+  }
+
+  .lamp {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 78px;
+    margin-left: -1px;
+    background: var(--ink);
+    transform-origin: top center;
+    z-index: 20;
+  }
+
+  .bulb-wrap {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: grab;
+    padding: 6px 14px 14px;
+    touch-action: none;
+  }
+
+  .bulb-wrap:active {
+    cursor: grabbing;
+  }
+
+  .bulb-cap {
+    width: 10px;
+    height: 7px;
+    margin: 0 auto;
+    background: #8b8b8b;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .bulb-glass {
+    width: 26px;
+    height: 30px;
+    margin-top: -1px;
+    border-radius: 50% 50% 45% 45%;
+    border: 2px solid #9a9a9a;
+    background: transparent;
+    transition: background-color 0.08s ease, border-color 0.08s ease, box-shadow 0.08s ease;
+  }
+
+  body.lamp-on .bulb-glass {
+    background: #FFD966;
+    border-color: #C99A2E;
+    box-shadow: 0 0 16px 6px rgba(255, 214, 102, 0.85);
+  }
+
+  /* El propio texto "capta" la luz: nada de capas duplicadas, solo un
+     resplandor aplicado directamente sobre las letras reales. */
+  .logo-row {
+    transition: text-shadow 0.15s ease, filter 0.15s ease;
+  }
+
+  body.lamp-on .logo-row {
+    text-shadow: 0 0 18px rgba(255, 214, 102, 0.9), 0 0 40px rgba(255, 200, 90, 0.5);
+  }
+
+  body.lamp-on .clock {
+    box-shadow: 0 0 14px 3px rgba(255, 214, 102, 0.7);
+  }
+
+  .lamp.broken {
+    height: 20px;
+  }
+
+  .falling-bulb {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 26px;
+    z-index: 50;
+    display: none;
+  }
+
+  .falling-bulb .broken-wire {
+    width: 2px;
+    height: 16px;
+    margin: 0 auto;
+    background: var(--ink);
+  }
+
+  /* Monigote con cabeza de bombilla */
+  .walker {
+    position: absolute;
+    top: 0;
+    left: -40px;
+    width: 26px;
+    height: 42px;
+    z-index: 60;
+    display: none;
+  }
+
+  .walker svg { width: 100%; height: 100%; overflow: visible; }
+  .walker .leg-a, .walker .leg-b {
+    transform-box: fill-box;
+    transform-origin: 50% 0%;
+  }
+  .walker .leg-a { animation: walk-a 0.4s linear infinite; }
+  .walker .leg-b { animation: walk-b 0.4s linear infinite; }
+
+  @keyframes walk-a {
+    0%, 100% { transform: rotate(-22deg); }
+    50% { transform: rotate(22deg); }
+  }
+  @keyframes walk-b {
+    0%, 100% { transform: rotate(22deg); }
+    50% { transform: rotate(-22deg); }
+  }
+
+  /* Título principal */
+  .logo-row {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: clamp(42px, 8vw, 78px);
+    margin-top: 148px;
+  }
+
+  .logo {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 1em;
+    margin: 0;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  /* Reloj original exacto */
+  .clock {
+    position: relative;
+    width: 0.62em;
+    height: 0.62em;
+    border-radius: 50%;
+    background: #fff;
+    border: 4px solid var(--ink);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .clock .hand {
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    transform-origin: 50% 100%;
+    background: var(--ink);
+    border-radius: 4px;
+  }
+
+  .clock .hand.hour {
+    width: 9%;
+    height: 26%;
+    margin-left: -4.5%;
+  }
+
+  .clock .hand.minute {
+    width: 6%;
+    height: 38%;
+    margin-left: -3%;
+    background: #E8604C;
+  }
+
+  .clock .pin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12%;
+    height: 12%;
+    margin: -6% 0 0 -6%;
+    background: var(--ink);
+    border-radius: 50%;
+  }
+
+  .tagline {
+    margin-top: 14px;
+    font-size: 18px;
+    color: var(--ink);
+    opacity: 0.6;
+    font-weight: 500;
+  }
+
+  .grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: 800px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 540px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    display: block;
+    background: #fff;
+    border: 2px solid var(--card-border);
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: var(--ink);
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .card:hover, .card:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+
+  .card-image {
+    width: 100%;
+    height: 150px;
+    background: #F4F4F4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
   }
-  h1, h2, h3 { font-family: 'Baloo 2', sans-serif; margin: 0; }
 
-  .screen { display: none; }
-  .screen.active { display: flex; }
-
-  /* ---------- HOME ---------- */
-  #screen-home {
-    position: fixed; inset: 0;
-    align-items: center; justify-content: center;
-    flex-direction: column; text-align: center;
-    padding: 24px; overflow-y: auto;
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
-  .brand-link {
-    display: inline-flex; align-items: baseline; gap: 6px;
-    text-decoration: none; color: var(--text); margin-bottom: 26px; opacity: 0.85;
+
+  .card-image .placeholder {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 13px;
+    color: #9a9a9a;
   }
-  .brand-link .mark { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 20px; }
-  .brand-link .sub { font-size: 13px; color: var(--muted); }
 
-  .hero-title { font-size: clamp(36px, 7vw, 60px); font-weight: 800; color: var(--accent); line-height: 1; }
-  .hero-eye {
-    display: inline-block; width: 0.85em; height: 0.5em;
-    border-radius: 50%; background: #1a1b1e; border: 3px solid var(--text);
-    position: relative; vertical-align: -0.08em; margin: 0 4px;
-  }
-  .hero-eye::after {
-    content: ""; position: absolute; width: 38%; height: 60%;
-    background: var(--text); border-radius: 50%; top: 20%; left: 31%;
-  }
-  .hero-tagline { margin-top: 10px; font-size: 16px; color: var(--muted); max-width: 460px; }
-
-  .status-card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
-    padding: 20px 24px; margin-top: 30px; width: 340px; max-width: 88vw; text-align: left;
-    backdrop-filter: blur(10px);
-  }
-  .status-card p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.5; }
-  .status-card p.ok { color: var(--accent); font-weight: 600; }
-  .status-card p.warn { color: var(--gold); font-weight: 600; }
-
-  .btn {
-    font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 17px;
-    padding: 13px 26px; border-radius: 14px; border: none; cursor: pointer;
-    transition: transform 0.12s ease, opacity 0.12s ease;
-  }
-  .btn:hover { transform: translateY(-2px); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .btn-primary { background: var(--accent); color: #0d0f10; }
-  .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
-
-  #btn-play { margin-top: 20px; width: 260px; max-width: 100%; }
-
-  .howto { margin-top: 24px; font-size: 13.5px; color: var(--muted); max-width: 380px; line-height: 1.5; }
-  .link-line { margin-top: 16px; font-size: 13.5px; }
-  .link-line a { color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 1px dashed var(--accent); }
-
-  /* ---------- CANVAS COMPARTIDO ---------- */
-  #pano-canvas { position: fixed; inset: 0; cursor: grab; touch-action: none; display: none; z-index: 0; }
-  #pano-canvas.dragging { cursor: grabbing; }
-  body.viewer-active #pano-canvas { display: block; }
-  body.game-active #pano-canvas { filter: grayscale(1) contrast(1.08) brightness(0.92); }
-
-  /* ---------- JUEGO ---------- */
-  #screen-game { position: fixed; inset: 0; display: none; z-index: 1; pointer-events: none; }
-  #screen-game.active { display: block; }
-
-  .hud-top-left {
-    position: fixed; top: 18px; left: 18px; z-index: 10;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .hud-top-right {
-    position: fixed; top: 18px; right: 18px; z-index: 10;
-    display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
-    max-width: 46vw;
-  }
-  .pill {
-    background: var(--panel-solid); border: 1px solid var(--border);
-    backdrop-filter: blur(10px);
-    border-radius: 14px; padding: 8px 16px;
+  .card-title {
     font-family: 'Baloo 2', sans-serif;
-  }
-  .pill-timer { font-size: 26px; font-weight: 800; min-width: 84px; text-align: center; }
-  .pill-timer.low { color: var(--warn); }
-  .pill-score { font-size: 14px; font-weight: 700; color: var(--accent); }
-
-  .word-pill {
-    background: var(--panel-solid); border: 1px solid var(--border);
-    backdrop-filter: blur(10px);
-    border-radius: 12px; padding: 7px 14px;
-    font-size: 17px; font-weight: 700; letter-spacing: 3px;
-    white-space: nowrap;
-  }
-  .word-pill.found { color: var(--accent); border-color: var(--accent); opacity: 0.75; text-decoration: line-through; letter-spacing: 1px; }
-
-  .toast {
-    position: fixed; top: 90px; left: 50%; transform: translateX(-50%);
-    background: var(--panel-solid); border: 1px solid var(--border); color: var(--text);
-    padding: 9px 20px; border-radius: 20px; backdrop-filter: blur(10px);
-    font-size: 14px; font-weight: 600; z-index: 15; opacity: 0; pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(6px); }
-  .toast.wrong { border-color: var(--warn); color: var(--warn); }
-  .toast.right { border-color: var(--accent); color: var(--accent); }
-
-  .guess-bar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    display: flex; justify-content: center; padding: 18px; z-index: 12;
-    pointer-events: auto;
-  }
-  .guess-card {
-    background: var(--panel-solid); border: 1px solid var(--border); backdrop-filter: blur(10px);
-    border-radius: 16px; padding: 12px 14px;
-    display: flex; gap: 10px; max-width: 440px; width: 100%;
-  }
-  .guess-card input {
-    flex: 1; font-size: 16px; padding: 10px 12px;
-    border: 1px solid var(--border); border-radius: 10px; min-width: 0;
-    background: rgba(255,255,255,0.05); color: var(--text);
-  }
-  .guess-card input:focus { outline: none; border-color: var(--accent); }
-  .guess-card input::placeholder { color: var(--muted); }
-
-  .drag-hint {
-    position: fixed; bottom: 92px; left: 50%; transform: translateX(-50%);
-    font-size: 13px; color: var(--muted); z-index: 5;
-    background: var(--panel-solid); border: 1px solid var(--border); backdrop-filter: blur(10px);
-    padding: 6px 14px; border-radius: 20px;
-    pointer-events: none; transition: opacity 0.4s ease;
+    font-weight: 700;
+    font-size: 20px;
+    text-align: center;
+    padding: 14px 12px;
   }
 
-  /* ---------- OVERLAYS ---------- */
-  .overlay-panel {
-    position: fixed; inset: 0; z-index: 20; background: rgba(5,6,7,0.72);
-    display: none; align-items: center; justify-content: center; padding: 20px;
+  .card.soon {
+    cursor: default;
+    border-style: dashed;
+    border-color: #c7c7c7;
+    box-shadow: none;
   }
-  .overlay-panel.active { display: flex; }
-  .overlay-card {
-    background: var(--panel-solid); border: 1px solid var(--border); border-radius: 20px; padding: 30px 28px;
-    max-width: 420px; width: 100%; text-align: center;
+  .card.soon:hover {
+    transform: none;
+    box-shadow: none;
   }
-  .overlay-card h2 { font-size: 24px; color: var(--accent); margin-bottom: 8px; }
-  .final-total { font-size: 34px; font-weight: 800; color: var(--accent); margin: 6px 0 20px; font-family: 'Baloo 2', sans-serif; }
-  .final-list { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; text-align: left; }
-  .final-row { display: flex; justify-content: space-between; font-size: 14.5px; padding: 7px 4px; border-bottom: 1px solid var(--border); }
-  .final-row.missed { color: var(--muted); }
-  .final-row .pts { color: var(--accent); font-weight: 700; }
-  .final-trophy { font-size: 50px; }
-
-  /* ---------- EDITOR (mismo tono oscuro, pero sin filtro B/N para ver colores reales) ---------- */
-  #screen-editor { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 1; pointer-events: none; }
-  #screen-editor.active { display: flex; }
-  .editor-topbar {
-    position: relative; z-index: 11; pointer-events: auto;
-    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-    padding: 14px 16px; background: var(--panel-solid); border-bottom: 1px solid var(--border);
+  .card.soon .card-image {
+    background: #FAFAFA;
   }
-  .editor-topbar input[type=text] {
-    font-size: 14px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
-    background: rgba(255,255,255,0.05); color: var(--text);
-  }
-  #ed-image-url { flex: 1; min-width: 180px; }
-  #ed-word { width: 140px; text-transform: uppercase; }
-  .editor-topbar .btn { font-size: 14px; padding: 9px 16px; }
-  .editor-status {
-    position: fixed; top: 74px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.75); color: #fff; padding: 8px 16px;
-    border-radius: 20px; font-size: 13.5px; z-index: 10; pointer-events: none;
-    text-align: center; max-width: 90vw;
-  }
-  .editor-panel {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 11; pointer-events: auto;
-    background: var(--panel-solid); border-top: 1px solid var(--border);
-    padding: 14px 16px; max-height: 46vh; display: flex; flex-direction: column; gap: 8px;
-  }
-  .editor-panel textarea {
-    width: 100%; min-height: 90px; font-family: monospace; font-size: 12.5px;
-    padding: 10px; border: 1px solid var(--border); border-radius: 8px; resize: vertical;
-    background: rgba(255,255,255,0.04); color: var(--text);
-  }
-  .editor-panel .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .editor-panel .row .btn { font-size: 14px; padding: 9px 16px; }
-  .editor-panel .hint { font-size: 12.5px; color: var(--muted); margin: 0; }
-  .editor-hint {
-    position: fixed; bottom: 46vh; left: 50%; transform: translateX(-50%);
-    margin-bottom: 10px; font-size: 12.5px; color: var(--muted);
-    background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 20px; z-index: 10;
-    pointer-events: none;
-  }
-  .hidden { display: none !important; }
-
-  @media (max-width: 560px) {
-    .pill-timer { font-size: 20px; }
-    .word-pill { font-size: 14px; letter-spacing: 2px; }
-    .hud-top-right { max-width: 60vw; }
+  .card.soon .card-title {
+    color: #a9a9a9;
   }
 </style>
 </head>
 <body>
 
-  <canvas id="pano-canvas"></canvas>
-
-  <!-- ============ INICIO ============ -->
-  <div class="screen active" id="screen-home">
-    <a href="../" class="brand-link"><span class="mark">FCIIN</span><span class="sub">.io</span></a>
-    <h1 class="hero-title">Ve<span class="hero-eye"></span>Veo 360°</h1>
-    <p class="hero-tagline">Encuentra los objetos escondidos en una foto de 360º antes de que se acabe el tiempo. Una palabra nueva aparece cada minuto.</p>
-
-    <div class="status-card" id="status-card">
-      <p id="niveles-status">Cargando niveles…</p>
-    </div>
-
-    <button class="btn btn-primary" id="btn-play" disabled>Jugar</button>
-
-    <p class="howto">Arrastra para mirar alrededor. Cada palabra empieza mostrando solo su primera letra — con el tiempo aparecen más, y hacia el final del reloj los objetos que aún no has encontrado se iluminan.</p>
-
-    <p class="link-line"><a href="#" id="btn-goto-editor">Abrir el editor de niveles</a></p>
-  </div>
-
-  <!-- ============ EDITOR DE NIVELES ============ -->
-  <div class="screen" id="screen-editor">
-    <div class="editor-topbar">
-      <a href="#" id="btn-leave-editor" class="brand-link" style="margin:0;"><span class="mark">←</span><span class="sub">Volver</span></a>
-      <input type="text" id="ed-image-url" placeholder="URL de tu foto 360 (equirectangular, ratio 2:1)">
-      <button class="btn btn-secondary" id="btn-load-photo">Cargar foto</button>
-      <input type="text" id="ed-word" placeholder="PALABRA" maxlength="18">
-    </div>
-
-    <div class="editor-status" id="editor-status">Pega la URL de tu foto y pulsa "Cargar foto".</div>
-    <div class="editor-hint hidden" id="editor-hint">Arrastra para mirar alrededor. Haz click justo sobre el objeto que quieres esconder.</div>
-
-    <div class="editor-panel">
-      <div class="row">
-        <button class="btn btn-primary" id="btn-add-level" disabled>Añadir este nivel a la lista</button>
-        <button class="btn btn-secondary" id="btn-copy-levels" disabled>Copiar código</button>
-        <button class="btn btn-secondary" id="btn-clear-levels">Vaciar lista</button>
-      </div>
-      <p class="hint">Pega esto dentro del array <code>NIVELES</code> en tu archivo <code>niveles.js</code>:</p>
-      <textarea id="ed-output" readonly placeholder="Aquí aparecerá el código de tus niveles a medida que los añadas…"></textarea>
-    </div>
-  </div>
-
-  <!-- ============ JUEGO ============ -->
-  <div class="screen" id="screen-game">
-    <div class="hud-top-left">
-      <div class="pill pill-timer" id="hud-timer">5:00</div>
-      <div class="pill pill-score">Puntos: <span id="hud-score">0</span></div>
-    </div>
-    <div class="hud-top-right" id="word-list"></div>
-
-    <div class="toast" id="toast"></div>
-    <div class="drag-hint" id="drag-hint">Arrastra para mirar alrededor</div>
-
-    <div class="guess-bar">
-      <div class="guess-card">
-        <input type="text" id="guess-input" placeholder="¿Qué es? Escribe tu respuesta…" autocomplete="off" autocapitalize="off">
-        <button class="btn btn-primary" id="btn-guess">Enviar</button>
+  <header>
+    <div class="lamp-anchor" id="lampAnchor"></div>
+    <div class="lamp" id="lamp">
+      <div class="bulb-wrap" id="bulbWrap">
+        <div class="bulb-cap"></div>
+        <div class="bulb-glass" id="bulbGlass"></div>
       </div>
     </div>
-  </div>
-
-  <!-- ============ FINAL ============ -->
-  <div class="overlay-panel" id="overlay-final">
-    <div class="overlay-card">
-      <div class="final-trophy">🏆</div>
-      <h2>¡Partida terminada!</h2>
-      <div class="final-total" id="final-total">0 pts</div>
-      <div class="final-list" id="final-list"></div>
-      <button class="btn btn-primary" id="btn-play-again" style="width:100%; margin-bottom:10px;">Jugar otra vez</button>
-      <button class="btn btn-secondary" id="btn-home-again" style="width:100%;">Volver al inicio</button>
+    <div class="logo-row" id="logoRow">
+      <h1 class="logo">FCIIN</h1>
+      <div class="clock" id="clock">
+        <div class="hand hour" id="hourHand"></div>
+        <div class="hand minute" id="minuteHand"></div>
+        <div class="pin"></div>
+      </div>
+      <h1 class="logo">io</h1>
     </div>
+    <p class="tagline">games and stuff made by FCIIN</p>
+  </header>
+
+  <main class="grid">
+    <a class="card" href="veoveo/" rel="noopener">
+      <div class="card-image">
+        <img src="veoveo-thumb.png" alt="Veo o Veo" onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='block';">
+        <span class="placeholder" style="display:none;">Sube veoveo-thumb.png</span>
+      </div>
+      <div class="card-title">Veo o Veo</div>
+    </a>
+    <div class="card soon">
+      <div class="card-image"><span class="placeholder">Próximamente</span></div>
+      <div class="card-title">Próximamente</div>
+    </div>
+    <div class="card soon">
+      <div class="card-image"><span class="placeholder">Próximamente</span></div>
+      <div class="card-title">Próximamente</div>
+    </div>
+  </main>
+
+  <div class="falling-bulb" id="fallingBulb">
+    <div class="broken-wire"></div>
+    <div class="bulb-cap"></div>
+    <div class="bulb-glass"></div>
   </div>
 
-<script src="niveles.js"></script>
+  <div class="walker" id="walker">
+    <svg viewBox="0 0 24 42">
+      <path d="M 7,7 C 7,3 17,3 17,7 C 17,9.5 15,11 14.5,12 L 9.5,12 C 9,11 7,9.5 7,7 Z" fill="#FFD966" stroke="#1B1B1B" stroke-width="1.5"></path>
+      <rect x="9.5" y="12" width="5" height="2.5" fill="#8B8B8B" stroke="#1B1B1B" stroke-width="0.8"></rect>
+      <circle cx="12" cy="7" r="1.5" fill="#C99A2E"></circle>
+      <line x1="12" y1="14.5" x2="12" y2="26" stroke="#1B1B1B" stroke-width="2"></line>
+      <line x1="12" y1="17.5" x2="5" y2="22.5" stroke="#1B1B1B" stroke-width="2"></line>
+      <line x1="12" y1="17.5" x2="19" y2="22.5" stroke="#1B1B1B" stroke-width="2"></line>
+      <line class="leg-a" x1="12" y1="26" x2="6" y2="38" stroke="#1B1B1B" stroke-width="2"></line>
+      <line class="leg-b" x1="12" y1="26" x2="18" y2="38" stroke="#1B1B1B" stroke-width="2"></line>
+    </svg>
+  </div>
+
 <script>
-(function () {
-  "use strict";
+(function() {
+  const clock = document.getElementById('clock');
+  const hourHand = document.getElementById('hourHand');
+  const minuteHand = document.getElementById('minuteHand');
+  const logoRow = document.getElementById('logoRow');
+  const lampAnchor = document.getElementById('lampAnchor');
 
-  const NIVELES = (typeof window !== "undefined" && Array.isArray(window.NIVELES)) ? window.NIVELES : [];
-  const GAME_SECONDS = 300; // 5 minutos, fijo
-  const WORD_INTERVAL = 60; // una palabra nueva cada minuto
-  const MAX_WORDS = 5;
-  const HINT_WINDOW = 45; // últimos segundos: se iluminan los objetos que faltan
+  const now = new Date();
+  const startHours = now.getHours();
+  const startMinutes = now.getMinutes();
+  const startSeconds = now.getSeconds();
 
-  /* ============================================================
-     ESCENA 360º
-     ============================================================ */
-  const canvas = document.getElementById("pano-canvas");
-  const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  let minuteAngle = (startMinutes + startSeconds / 60) * 6;
+  let hourAngle = ((startHours % 12) + startMinutes / 60) * 30;
+  let simulatedMinutesSinceMidnight = startHours * 60 + startMinutes + startSeconds / 60;
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 1000);
+  let previousCursorAngle = null;
 
-  const skyGeo = new THREE.SphereGeometry(400, 48, 32);
-  skyGeo.scale(-1, 1, 1);
-  const skyMat = new THREE.MeshBasicMaterial({ color: 0x232427 });
-  const skySphere = new THREE.Mesh(skyGeo, skyMat);
-  scene.add(skySphere);
-  skyMat.userData.currentUrl = null;
+  function applyHands() {
+    hourHand.style.transform = 'rotate(' + hourAngle + 'deg)';
+    minuteHand.style.transform = 'rotate(' + minuteAngle + 'deg)';
+  }
 
-  function loadPanorama(url, onDone) {
-    skyMat.userData.currentUrl = url;
-    new THREE.TextureLoader().load(url, function (tex) {
-      if (skyMat.userData.currentUrl !== url) return;
-      skyMat.map = tex;
-      skyMat.color.set(0xffffff);
-      skyMat.needsUpdate = true;
-      if (onDone) onDone(true);
-    }, undefined, function () {
-      skyMat.map = null;
-      skyMat.color.set(0x3a3d42);
-      skyMat.needsUpdate = true;
-      if (onDone) onDone(false);
+  function applyBackground() {
+    const hourOfDay = (simulatedMinutesSinceMidnight / 60) % 24;
+    const normalizedHour = ((hourOfDay % 24) + 24) % 24;
+    const brightness = (Math.cos(((normalizedHour - 12) / 12) * Math.PI) + 1) / 2;
+
+    const night = [16, 19, 33];
+    const day = [237, 238, 243];
+
+    const r = Math.round(night[0] + (day[0] - night[0]) * brightness);
+    const g = Math.round(night[1] + (day[1] - night[1]) * brightness);
+    const b = Math.round(night[2] + (day[2] - night[2]) * brightness);
+
+    document.body.style.backgroundColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+
+    updateLampState(brightness);
+  }
+
+  const NIGHT_THRESHOLD = 0.35;
+  let isNight = false;
+  let isBroken = false;
+  let blinkTimeoutIds = [];
+
+  function setBulbVisual(on) {
+    if (isBroken) on = false;
+    document.body.classList.toggle('lamp-on', on);
+  }
+
+  function clearBlinkTimeouts() {
+    blinkTimeoutIds.forEach(clearTimeout);
+    blinkTimeoutIds = [];
+  }
+
+  function startBlinkSequence() {
+    if (isBroken) return;
+    clearBlinkTimeouts();
+    const sequence = [
+      [true, 0],
+      [false, 120],
+      [true, 180],
+      [false, 100],
+      [true, 220]
+    ];
+    let delay = 0;
+    sequence.forEach(function(step) {
+      delay += step[1];
+      blinkTimeoutIds.push(setTimeout(function() { setBulbVisual(step[0]); }, delay));
     });
   }
 
-  function resize() {
-    renderer.setSize(window.innerWidth, window.innerHeight, false);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-  }
-  window.addEventListener("resize", resize);
-  resize();
-
-  /* --- Conversión dirección 3D <-> yaw/pitch (grados) --- */
-  function directionFromYawPitch(yawDeg, pitchDeg) {
-    const yaw = THREE.MathUtils.degToRad(yawDeg);
-    const pitch = THREE.MathUtils.degToRad(pitchDeg);
-    return new THREE.Vector3(
-      -Math.sin(yaw) * Math.cos(pitch),
-      Math.sin(pitch),
-      -Math.cos(yaw) * Math.cos(pitch)
-    );
-  }
-  function yawPitchFromDirection(dir) {
-    const pitch = Math.asin(Math.max(-1, Math.min(1, dir.y)));
-    const yaw = Math.atan2(-dir.x, -dir.z);
-    return { yaw: THREE.MathUtils.radToDeg(yaw), pitch: THREE.MathUtils.radToDeg(pitch) };
-  }
-
-  function makeGlowTexture() {
-    const c = document.createElement("canvas");
-    c.width = c.height = 128;
-    const ctx = c.getContext("2d");
-    const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-    grad.addColorStop(0, "rgba(255,217,102,0.95)");
-    grad.addColorStop(0.5, "rgba(255,217,102,0.45)");
-    grad.addColorStop(1, "rgba(255,217,102,0)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 128, 128);
-    return new THREE.CanvasTexture(c);
-  }
-  const GLOW_TEX = makeGlowTexture();
-  const HINT_MARKER_RADIUS = 60;
-
-  function makeHintMarker() {
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, transparent: true, depthTest: false }));
-    sprite.scale.set(16, 16, 1);
-    sprite.visible = false;
-    sprite.renderOrder = 999;
-    scene.add(sprite);
-    return sprite;
-  }
-  // Pool de marcadores (hasta MAX_WORDS objetivos activos a la vez)
-  const hintMarkers = [];
-  for (let i = 0; i < MAX_WORDS; i++) hintMarkers.push(makeHintMarker());
-
-  function placeHintMarker(sprite, yawDeg, pitchDeg) {
-    const dir = directionFromYawPitch(yawDeg, pitchDeg);
-    sprite.position.copy(dir.multiplyScalar(HINT_MARKER_RADIUS));
-  }
-
-  /* --- Cámara: mirar alrededor arrastrando (como GeoGuessr) --- */
-  let yaw = 0, pitch = 0;
-  let dragging = false, lastX = 0, lastY = 0;
-  let movedDistance = 0;
-  let downOnCanvas = false;
-  let editorMode = false;
-
-  function applyCameraRotation() {
-    camera.rotation.order = "YXZ";
-    camera.rotation.y = yaw;
-    camera.rotation.x = pitch;
-  }
-
-  function pointerDown(x, y) {
-    dragging = true; lastX = x; lastY = y; movedDistance = 0;
-    downOnCanvas = true;
-    canvas.classList.add("dragging");
-  }
-  function pointerMove(x, y) {
-    if (!dragging) return;
-    const dx = x - lastX, dy = y - lastY;
-    lastX = x; lastY = y;
-    movedDistance += Math.abs(dx) + Math.abs(dy);
-    yaw -= dx * 0.0032;
-    pitch -= dy * 0.0032;
-    pitch = Math.max(-1.1, Math.min(1.1, pitch));
-    applyCameraRotation();
-    document.getElementById("drag-hint").style.opacity = "0";
-  }
-  function pointerUp(x, y) {
-    dragging = false;
-    canvas.classList.remove("dragging");
-    if (downOnCanvas && editorMode && movedDistance < 6 && typeof x === "number") {
-      handleEditorClick(x, y);
+  function updateLampState(brightness) {
+    if (isBroken) return;
+    const nowIsNight = brightness < NIGHT_THRESHOLD;
+    if (nowIsNight && !isNight) {
+      isNight = true;
+      startBlinkSequence();
+    } else if (!nowIsNight && isNight) {
+      isNight = false;
+      clearBlinkTimeouts();
+      setBulbVisual(false);
     }
-    downOnCanvas = false;
   }
 
-  canvas.addEventListener("mousedown", function (e) { pointerDown(e.clientX, e.clientY); });
-  window.addEventListener("mousemove", function (e) { pointerMove(e.clientX, e.clientY); });
-  window.addEventListener("mouseup", function (e) { pointerUp(e.clientX, e.clientY); });
-  canvas.addEventListener("touchstart", function (e) { const t = e.touches[0]; pointerDown(t.clientX, t.clientY); }, { passive: true });
-  canvas.addEventListener("touchmove", function (e) { const t = e.touches[0]; pointerMove(t.clientX, t.clientY); }, { passive: true });
-  canvas.addEventListener("touchend", function (e) {
-    const t = e.changedTouches[0];
-    pointerUp(t ? t.clientX : undefined, t ? t.clientY : undefined);
+  setInterval(function() {
+    if (isNight && !isBroken) {
+      setBulbVisual(false);
+      setTimeout(function() { if (isNight && !isBroken) setBulbVisual(true); }, 400);
+    }
+  }, 30000);
+
+  applyHands();
+  applyBackground();
+
+  /* --- Péndulo y física --- */
+  const lamp = document.getElementById('lamp');
+  const bulbWrap = document.getElementById('bulbWrap');
+  const fallingBulb = document.getElementById('fallingBulb');
+
+  const WIRE_LEN = 78;
+  const GRAVITY = 1600;
+  const DAMPING = 1.1;
+  const MAX_ANGLE = 1.3;
+  const BREAK_SPEED = 9;
+  const WALL_MARGIN = 20;
+  const FALL_GRAVITY = 2200;
+  const BULB_TOTAL_H = 53;
+  const BULB_W = 26;
+
+  let angle = 0;
+  let angularVelocity = 0;
+  let isDragging = false;
+  let lastDragAngle = 0;
+  let lastDragTime = 0;
+  let lastFrameTime = null;
+
+  function getAnchorPoint() {
+    const rect = lampAnchor.getBoundingClientRect();
+    return { x: rect.left, y: rect.top };
+  }
+
+  function renderLamp() {
+    const deg = angle * 180 / Math.PI;
+    lamp.style.transform = 'rotate(' + deg + 'deg)';
+
+    const anchor = getAnchorPoint();
+    const bulbX = anchor.x - WIRE_LEN * Math.sin(angle);
+    if (bulbX < WALL_MARGIN || bulbX > window.innerWidth - WALL_MARGIN) {
+      breakWire();
+    }
+  }
+
+  function angleFromPointer(clientX, clientY) {
+    const anchor = getAnchorPoint();
+    const dx = clientX - anchor.x;
+    const dy = clientY - anchor.y;
+    let a = Math.atan2(-dx, dy);
+    if (a > MAX_ANGLE) a = MAX_ANGLE;
+    if (a < -MAX_ANGLE) a = -MAX_ANGLE;
+    return a;
+  }
+
+  function startDrag(clientX, clientY) {
+    if (isBroken) return;
+    isDragging = true;
+    angularVelocity = 0;
+    angle = angleFromPointer(clientX, clientY);
+    lastDragAngle = angle;
+    lastDragTime = performance.now();
+    renderLamp();
+  }
+
+  function moveDrag(clientX, clientY) {
+    if (!isDragging || isBroken) return;
+    const now = performance.now();
+    const newAngle = angleFromPointer(clientX, clientY);
+    const dt = Math.max((now - lastDragTime) / 1000, 0.001);
+    angularVelocity = (newAngle - lastDragAngle) / dt;
+    angle = newAngle;
+    lastDragAngle = newAngle;
+    lastDragTime = now;
+    renderLamp();
+
+    if (!isBroken && Math.abs(angularVelocity) > BREAK_SPEED) {
+      breakWire();
+    }
+  }
+
+  function endDrag() {
+    isDragging = false;
+  }
+
+  function breakWire() {
+    if (isBroken) return;
+    isBroken = true;
+    isDragging = false;
+    setBulbVisual(false);
+
+    const anchor = getAnchorPoint();
+    let breakX = anchor.x - WIRE_LEN * Math.sin(angle) + window.scrollX;
+    let breakY = anchor.y + WIRE_LEN * Math.cos(angle) + window.scrollY;
+
+    const maxMargin = window.innerWidth - WALL_MARGIN - BULB_W;
+    breakX = Math.max(WALL_MARGIN, Math.min(maxMargin, breakX));
+
+    let vx = angularVelocity * WIRE_LEN * -Math.cos(angle);
+    let vy = angularVelocity * WIRE_LEN * -Math.sin(angle);
+
+    angle = 0;
+    angularVelocity = 0;
+    lamp.classList.add('broken');
+    lamp.style.transform = 'rotate(0deg)';
+    bulbWrap.style.display = 'none';
+
+    fallingBulb.style.display = 'block';
+    startFall(breakX, breakY, vx, vy);
+  }
+
+  bulbWrap.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    startDrag(e.clientX, e.clientY);
   });
+  document.addEventListener('mousemove', function(e) {
+    moveDrag(e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseup', endDrag);
 
-  /* ============================================================
-     ESTADO DE LA PARTIDA
-     ============================================================ */
-  let activeWords = []; // { level, marker, revealed[], appeared, found, appearAtRemaining }
-  let timeLeft = GAME_SECONDS;
-  let score = 0;
-  let tickTimer = null;
-  let gameActive = false;
+  bulbWrap.addEventListener('touchstart', function(e) {
+    const t = e.touches[0];
+    startDrag(t.clientX, t.clientY);
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    const t = e.touches[0];
+    moveDrag(t.clientX, t.clientY);
+  }, { passive: true });
+  document.addEventListener('touchend', endDrag);
 
-  function animate() {
-    requestAnimationFrame(animate);
-    const t = performance.now() * 0.004;
-    const pulse = 0.35 + (0.5 + Math.sin(t) * 0.5) * 0.65;
-    activeWords.forEach(function (w) {
-      if (w.appeared && !w.found && w.hintOn) {
-        w.marker.visible = true;
-        w.marker.material.opacity = pulse;
+  function physicsTick(timestamp) {
+    if (lastFrameTime === null) lastFrameTime = timestamp;
+    const dt = Math.min((timestamp - lastFrameTime) / 1000, 0.05);
+    lastFrameTime = timestamp;
+
+    if (!isDragging && !isBroken) {
+      const angularAcceleration = -(GRAVITY / WIRE_LEN) * Math.sin(angle) - DAMPING * angularVelocity;
+      angularVelocity += angularAcceleration * dt;
+      angle += angularVelocity * dt;
+      renderLamp();
+    }
+
+    requestAnimationFrame(physicsTick);
+  }
+  requestAnimationFrame(physicsTick);
+
+  /* --- Caída con rebote en paredes --- */
+  let fallX = 0, fallY = 0, fallVX = 0, fallVY = 0;
+  let fallLanded = false;
+  let lastFallTime = null;
+  let pageFloor = 0;
+
+  function startFall(x, y, vx, vy) {
+    fallX = x - BULB_W / 2;
+    fallY = y;
+    fallVX = vx;
+    fallVY = vy;
+    fallLanded = false;
+    lastFallTime = null;
+
+    pageFloor = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      window.innerHeight
+    );
+
+    positionFallingBulb();
+    requestAnimationFrame(fallTick);
+  }
+
+  function positionFallingBulb() {
+    fallingBulb.style.left = fallX + 'px';
+    fallingBulb.style.top = fallY + 'px';
+  }
+
+  function fallTick(timestamp) {
+    if (fallLanded) return;
+    if (lastFallTime === null) lastFallTime = timestamp;
+    const dt = Math.min((timestamp - lastFallTime) / 1000, 0.05);
+    lastFallTime = timestamp;
+
+    fallVY += FALL_GRAVITY * dt;
+    fallX += fallVX * dt;
+    fallY += fallVY * dt;
+
+    const minX = WALL_MARGIN;
+    const maxX = window.innerWidth - WALL_MARGIN - BULB_W;
+
+    if (fallX < minX) {
+      fallX = minX;
+      fallVX = -fallVX * 0.4;
+    } else if (fallX > maxX) {
+      fallX = maxX;
+      fallVX = -fallVX * 0.4;
+    }
+
+    if (fallY + BULB_TOTAL_H >= pageFloor - 12) {
+      fallY = pageFloor - BULB_TOTAL_H - 12;
+      fallVY = 0;
+      fallVX = 0;
+      fallLanded = true;
+      positionFallingBulb();
+      onBulbLanded();
+      return;
+    }
+
+    positionFallingBulb();
+    requestAnimationFrame(fallTick);
+  }
+
+  /* --- Monigote recogedor --- */
+  const walker = document.getElementById('walker');
+  const WALK_SPEED = 140;
+  const WALKER_W = 26;
+  const WALKER_H = 42;
+
+  let walkerX = 0;
+  let walkerTargetX = 0;
+  let walkerPhase = null;
+  let lastWalkerTime = null;
+
+  function onBulbLanded() {
+    setTimeout(function() {
+      spawnWalker(fallX + BULB_W / 2);
+    }, 1200);
+  }
+
+  function positionWalker() {
+    walker.style.left = walkerX + 'px';
+    walker.style.top = (pageFloor - WALKER_H - 12) + 'px';
+  }
+
+  function spawnWalker(bulbDocX) {
+    walkerX = -WALKER_W - 20;
+    walker.style.display = 'block';
+    positionWalker();
+    walkerPhase = 'approach';
+    walkerTargetX = bulbDocX - WALKER_W / 2;
+    lastWalkerTime = null;
+    requestAnimationFrame(walkerTick);
+  }
+
+  function walkerTick(timestamp) {
+    if (lastWalkerTime === null) lastWalkerTime = timestamp;
+    const dt = Math.min((timestamp - lastWalkerTime) / 1000, 0.05);
+    lastWalkerTime = timestamp;
+
+    const dir = walkerTargetX >= walkerX ? 1 : -1;
+    walkerX += WALK_SPEED * dt * dir;
+    const reached = (dir > 0 && walkerX >= walkerTargetX) || (dir < 0 && walkerX <= walkerTargetX);
+
+    if (reached) {
+      walkerX = walkerTargetX;
+      positionWalker();
+
+      if (walkerPhase === 'approach') {
+        fallingBulb.style.display = 'none';
+        walkerPhase = 'carry';
+        walkerTargetX = window.innerWidth + WALKER_W + 20;
+        lastWalkerTime = null;
+        requestAnimationFrame(walkerTick);
       } else {
-        w.marker.visible = false;
+        walker.style.display = 'none';
       }
-    });
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  function normalize(s) {
-    return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-  }
-
-  function formatTime(s) {
-    const m = Math.floor(Math.max(0, s) / 60);
-    const sec = Math.max(0, s) % 60;
-    return m + ":" + (sec < 10 ? "0" : "") + sec;
-  }
-
-  function pickSessionLevels() {
-    const byImage = {};
-    NIVELES.forEach(function (lv) {
-      if (!byImage[lv.image]) byImage[lv.image] = [];
-      byImage[lv.image].push(lv);
-    });
-    let bestImage = null, bestList = [];
-    Object.keys(byImage).forEach(function (img) {
-      if (byImage[img].length > bestList.length) { bestImage = img; bestList = byImage[img]; }
-    });
-    const shuffled = bestList.slice();
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return { image: bestImage, levels: shuffled.slice(0, MAX_WORDS) };
-  }
-
-  function buildRevealSchedule(word, availableSeconds) {
-    const letterIdx = [];
-    for (let i = 1; i < word.length; i++) letterIdx.push(i);
-    const usable = Math.max(1, availableSeconds - 3);
-    return letterIdx.map(function (idx, n) {
-      const frac = (n + 1) / (letterIdx.length + 1);
-      return { idx: idx, atElapsed: Math.round(frac * usable * 0.85) };
-    });
-  }
-
-  function wordMask(w) {
-    return w.level.word.split("").map(function (ch, i) {
-      return w.revealed[i] ? ch : "_";
-    }).join(" ").toUpperCase();
-  }
-
-  function renderWordList() {
-    const el = document.getElementById("word-list");
-    el.innerHTML = "";
-    activeWords.forEach(function (w) {
-      if (!w.appeared) return;
-      const div = document.createElement("div");
-      div.className = "word-pill" + (w.found ? " found" : "");
-      div.textContent = w.found ? w.level.word.toUpperCase() + " ✓" : wordMask(w);
-      el.appendChild(div);
-    });
-  }
-
-  function showToast(msg, kind) {
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.className = "toast show" + (kind ? " " + kind : "");
-    clearTimeout(showToast._tm);
-    showToast._tm = setTimeout(function () { t.classList.remove("show"); }, 1400);
-  }
-
-  function startSession() {
-    const session = pickSessionLevels();
-    if (!session.image || !session.levels.length) return false;
-
-    loadPanorama(session.image);
-    timeLeft = GAME_SECONDS;
-    score = 0;
-    document.getElementById("hud-score").textContent = "0";
-    document.getElementById("hud-timer").textContent = formatTime(timeLeft);
-    document.getElementById("hud-timer").classList.remove("low");
-
-    activeWords = session.levels.map(function (level, i) {
-      return {
-        level: level,
-        marker: hintMarkers[i],
-        revealed: level.word.split("").map(function (_, idx) { return idx === 0; }),
-        appeared: false,
-        found: false,
-        hintOn: false,
-        schedule: null,
-        appearAtRemaining: GAME_SECONDS - i * WORD_INTERVAL
-      };
-    });
-
-    renderWordList();
-    processWordTimers();
-    document.getElementById("drag-hint").style.opacity = "1";
-    yaw = Math.random() * Math.PI * 2;
-    pitch = 0;
-    applyCameraRotation();
-
-    clearInterval(tickTimer);
-    tickTimer = setInterval(gameTick, 1000);
-    gameActive = true;
-    return true;
-  }
-
-  function processWordTimers() {
-    let changed = false;
-    activeWords.forEach(function (w) {
-      if (!w.appeared && timeLeft <= w.appearAtRemaining) {
-        w.appeared = true;
-        w.schedule = buildRevealSchedule(w.level.word, w.appearAtRemaining);
-        placeHintMarker(w.marker, w.level.yaw || 0, w.level.pitch || 0);
-        changed = true;
-      }
-      if (w.appeared && !w.found && w.schedule) {
-        const elapsed = w.appearAtRemaining - timeLeft;
-        w.schedule.forEach(function (s) {
-          if (s.atElapsed === elapsed) { w.revealed[s.idx] = true; changed = true; }
-        });
-      }
-      if (w.appeared && !w.found) {
-        w.hintOn = timeLeft <= HINT_WINDOW;
-      }
-    });
-    if (changed) renderWordList();
-  }
-
-  function gameTick() {
-    if (!gameActive) return;
-    timeLeft--;
-    document.getElementById("hud-timer").textContent = formatTime(timeLeft);
-    if (timeLeft <= 30) document.getElementById("hud-timer").classList.add("low");
-
-    processWordTimers();
-
-    const allDone = activeWords.every(function (w) { return w.appeared && w.found; });
-    if (timeLeft <= 0 || allDone) {
-      endSession();
-    }
-  }
-
-  function submitGuess() {
-    if (!gameActive) return;
-    const input = document.getElementById("guess-input");
-    const val = normalize(input.value);
-    input.value = "";
-    if (!val) return;
-
-    const match = activeWords.find(function (w) {
-      return w.appeared && !w.found && normalize(w.level.word) === val;
-    });
-
-    if (match) {
-      match.found = true;
-      match.revealed = match.revealed.map(function () { return true; });
-      const pts = Math.max(150, Math.round(1000 * (timeLeft / GAME_SECONDS)));
-      score += pts;
-      document.getElementById("hud-score").textContent = score;
-      showToast("¡Correcto! " + match.level.word.toUpperCase() + " (+" + pts + ")", "right");
-      renderWordList();
-    } else {
-      showToast("No es eso…", "wrong");
-    }
-  }
-
-  function endSession() {
-    gameActive = false;
-    clearInterval(tickTimer);
-
-    const finalList = document.getElementById("final-list");
-    finalList.innerHTML = "";
-    activeWords.forEach(function (w) {
-      if (!w.appeared) return;
-      const row = document.createElement("div");
-      row.className = "final-row" + (w.found ? "" : " missed");
-      row.innerHTML = "<span>" + w.level.word.toUpperCase() + "</span><span class=\"pts\">" + (w.found ? "encontrada" : "no encontrada") + "</span>";
-      finalList.appendChild(row);
-    });
-    document.getElementById("final-total").textContent = score + " pts";
-    document.getElementById("overlay-final").classList.add("active");
-  }
-
-  /* ============================================================
-     NAVEGACIÓN ENTRE PANTALLAS
-     ============================================================ */
-  const screenHome = document.getElementById("screen-home");
-  const screenGame = document.getElementById("screen-game");
-  const screenEditor = document.getElementById("screen-editor");
-
-  function refreshHomeStatus() {
-    const el = document.getElementById("niveles-status");
-    const btnPlay = document.getElementById("btn-play");
-    if (NIVELES.length === 0) {
-      el.textContent = "Todavía no tienes niveles. Abre el editor de abajo, marca objetos sobre tus fotos y pega el código en niveles.js.";
-      el.className = "warn";
-      btnPlay.disabled = true;
       return;
     }
-    const session = pickSessionLevels();
-    el.textContent = "Listo: " + session.levels.length + " objeto" + (session.levels.length === 1 ? "" : "s") + " escondidos en tu foto. Partida de 5 minutos.";
-    el.className = "ok";
-    btnPlay.disabled = session.levels.length === 0;
-  }
-  refreshHomeStatus();
 
-  function goHome() {
-    screenHome.classList.add("active");
-    screenGame.classList.remove("active");
-    screenEditor.classList.remove("active");
-    document.getElementById("overlay-final").classList.remove("active");
-    document.body.classList.remove("viewer-active", "game-active");
-    clearInterval(tickTimer);
-    gameActive = false;
-    editorMode = false;
-    refreshHomeStatus();
+    positionWalker();
+    requestAnimationFrame(walkerTick);
   }
 
-  function startGame() {
-    editorMode = false;
-    if (!startSession()) return;
-    screenHome.classList.remove("active");
-    screenGame.classList.add("active");
-    document.body.classList.add("viewer-active", "game-active");
-    resize();
-  }
+  /* --- Reloj manual --- */
+  document.addEventListener('mousemove', function(e) {
+    const rect = clock.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
 
-  document.getElementById("btn-play").addEventListener("click", startGame);
-  document.getElementById("btn-guess").addEventListener("click", submitGuess);
-  document.getElementById("guess-input").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") submitGuess();
-  });
-  document.getElementById("btn-play-again").addEventListener("click", function () {
-    document.getElementById("overlay-final").classList.remove("active");
-    startGame();
-  });
-  document.getElementById("btn-home-again").addEventListener("click", function () {
-    document.getElementById("overlay-final").classList.remove("active");
-    goHome();
-  });
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
 
-  /* ============================================================
-     EDITOR DE NIVELES
-     ============================================================ */
-  const raycaster = new THREE.Raycaster();
-  const edLevels = [];
-  let edPendingPoint = null;
+    let angleDeg = Math.atan2(dx, -dy) * (180 / Math.PI);
+    if (angleDeg < 0) angleDeg += 360;
 
-  function edSetStatus(msg) {
-    document.getElementById("editor-status").textContent = msg;
-  }
+    if (previousCursorAngle !== null) {
+      let delta = angleDeg - previousCursorAngle;
+      if (delta > 180) delta -= 360;
+      if (delta < -180) delta += 360;
 
-  function handleEditorClick(x, y) {
-    if (!skyMat.map) {
-      edSetStatus("Primero carga una foto con el botón de arriba.");
-      return;
+      minuteAngle = angleDeg;
+      hourAngle = (hourAngle + delta / 12 + 360) % 360;
+      simulatedMinutesSinceMidnight += delta / 6;
+
+      applyHands();
+      applyBackground();
     }
-    const rect = canvas.getBoundingClientRect();
-    const ndc = new THREE.Vector2(
-      ((x - rect.left) / rect.width) * 2 - 1,
-      -((y - rect.top) / rect.height) * 2 + 1
-    );
-    raycaster.setFromCamera(ndc, camera);
-    const hits = raycaster.intersectObject(skySphere);
-    if (!hits.length) return;
 
-    const dir = hits[0].point.clone().normalize();
-    const angles = yawPitchFromDirection(dir);
-    edPendingPoint = { yaw: Math.round(angles.yaw * 10) / 10, pitch: Math.round(angles.pitch * 10) / 10 };
-
-    const marker = hintMarkers[0];
-    placeHintMarker(marker, edPendingPoint.yaw, edPendingPoint.pitch);
-    marker.visible = true;
-    marker.material.opacity = 0.9;
-    activeWords = []; // aseguramos que animate() no lo vuelva a ocultar (modo editor no usa activeWords)
-
-    const word = document.getElementById("ed-word").value.trim();
-    document.getElementById("btn-add-level").disabled = !word;
-    edSetStatus(word
-      ? "Marcado en yaw " + edPendingPoint.yaw + "°, pitch " + edPendingPoint.pitch + "°. Pulsa \"Añadir este nivel a la lista\"."
-      : "Marcado. Escribe la palabra arriba a la derecha y pulsa \"Añadir este nivel a la lista\".");
-  }
-
-  function edRenderOutput() {
-    const out = document.getElementById("ed-output");
-    out.value = edLevels.map(function (lv) {
-      return '  { image: "' + lv.image + '", word: "' + lv.word + '", yaw: ' + lv.yaw + ', pitch: ' + lv.pitch + ' },';
-    }).join("\n");
-    document.getElementById("btn-copy-levels").disabled = edLevels.length === 0;
-  }
-
-  document.getElementById("btn-goto-editor").addEventListener("click", function (e) {
-    e.preventDefault();
-    editorMode = true;
-    screenHome.classList.remove("active");
-    screenEditor.classList.add("active");
-    document.body.classList.add("viewer-active");
-    document.body.classList.remove("game-active");
-    resize();
-    edSetStatus("Pega la URL de tu foto y pulsa \"Cargar foto\".");
+    previousCursorAngle = angleDeg;
   });
-
-  document.getElementById("btn-leave-editor").addEventListener("click", function (e) {
-    e.preventDefault();
-    if (hintMarkers[0]) hintMarkers[0].visible = false;
-    goHome();
-  });
-
-  document.getElementById("btn-load-photo").addEventListener("click", function () {
-    const url = document.getElementById("ed-image-url").value.trim();
-    if (!url) { edSetStatus("Pega antes la URL de una imagen."); return; }
-    hintMarkers[0].visible = false;
-    edPendingPoint = null;
-    document.getElementById("btn-add-level").disabled = true;
-    edSetStatus("Cargando foto…");
-    loadPanorama(url, function (ok) {
-      edSetStatus(ok
-        ? "Foto cargada. Arrastra para mirar alrededor y haz click sobre el objeto que quieres esconder."
-        : "No se ha podido cargar esa imagen — revisa que la URL sea directa a un archivo .jpg/.png y sea accesible públicamente.");
-      document.getElementById("editor-hint").classList.toggle("hidden", !ok);
-    });
-  });
-
-  document.getElementById("ed-word").addEventListener("input", function () {
-    document.getElementById("btn-add-level").disabled = !(edPendingPoint && this.value.trim());
-  });
-
-  document.getElementById("btn-add-level").addEventListener("click", function () {
-    const word = document.getElementById("ed-word").value.trim().toUpperCase();
-    const url = document.getElementById("ed-image-url").value.trim();
-    if (!word || !edPendingPoint || !url) return;
-    edLevels.push({ image: url, word: word, yaw: edPendingPoint.yaw, pitch: edPendingPoint.pitch });
-    edRenderOutput();
-    edSetStatus("¡Nivel añadido! Puedes marcar otro objeto en la misma foto, cargar otra foto, o copiar el código de abajo.");
-    document.getElementById("ed-word").value = "";
-    document.getElementById("btn-add-level").disabled = true;
-  });
-
-  document.getElementById("btn-copy-levels").addEventListener("click", function () {
-    const out = document.getElementById("ed-output");
-    out.select();
-    try {
-      navigator.clipboard.writeText(out.value);
-      edSetStatus("¡Código copiado! Pégalo dentro del array NIVELES en niveles.js.");
-    } catch (e) {
-      document.execCommand("copy");
-      edSetStatus("¡Código copiado!");
-    }
-  });
-
-  document.getElementById("btn-clear-levels").addEventListener("click", function () {
-    edLevels.length = 0;
-    edRenderOutput();
-    edSetStatus("Lista vaciada.");
-  });
-
-  applyCameraRotation();
 })();
 </script>
+
 </body>
 </html>
