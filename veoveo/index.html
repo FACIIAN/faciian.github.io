@@ -10,20 +10,22 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root {
-    --ink: #1B1B1B;
-    --teal: #2F7A72;
-    --teal-dark: #1f5a54;
-    --mustard: #FFD966;
-    --mustard-dark: #C99A2E;
-    --coral: #E8604C;
-    --bg: #EDEEF3;
-    --muted: #8a8a8a;
+    --bg: #121316;
+    --panel: rgba(255,255,255,0.07);
+    --panel-solid: #1c1d21;
+    --border: rgba(255,255,255,0.10);
+    --text: #F4F4F2;
+    --muted: #9a9a9f;
+    --accent: #5FD1C3;
+    --accent-dim: #2F7A72;
+    --warn: #FF7A63;
+    --gold: #FFD966;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
   body {
     background: var(--bg);
-    color: var(--ink);
+    color: var(--text);
     font-family: 'Work Sans', sans-serif;
     overflow: hidden;
   }
@@ -41,123 +43,96 @@
   }
   .brand-link {
     display: inline-flex; align-items: baseline; gap: 6px;
-    text-decoration: none; color: var(--ink); margin-bottom: 26px;
+    text-decoration: none; color: var(--text); margin-bottom: 26px; opacity: 0.85;
   }
   .brand-link .mark { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 20px; }
   .brand-link .sub { font-size: 13px; color: var(--muted); }
 
-  .hero-title { font-size: clamp(36px, 7vw, 60px); font-weight: 800; color: var(--teal); line-height: 1; }
+  .hero-title { font-size: clamp(36px, 7vw, 60px); font-weight: 800; color: var(--accent); line-height: 1; }
   .hero-eye {
     display: inline-block; width: 0.85em; height: 0.5em;
-    border-radius: 50%; background: #fff; border: 3px solid var(--ink);
+    border-radius: 50%; background: #1a1b1e; border: 3px solid var(--text);
     position: relative; vertical-align: -0.08em; margin: 0 4px;
   }
   .hero-eye::after {
     content: ""; position: absolute; width: 38%; height: 60%;
-    background: var(--ink); border-radius: 50%; top: 20%; left: 31%;
+    background: var(--text); border-radius: 50%; top: 20%; left: 31%;
   }
   .hero-tagline { margin-top: 10px; font-size: 16px; color: var(--muted); max-width: 460px; }
 
-  .settings-card {
-    background: #fff; border: 2px solid var(--teal); border-radius: 16px;
-    padding: 22px 24px; margin-top: 30px; width: 320px; max-width: 88vw; text-align: left;
+  .status-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px 24px; margin-top: 30px; width: 340px; max-width: 88vw; text-align: left;
+    backdrop-filter: blur(10px);
   }
-  .field { margin-bottom: 16px; }
-  .field:last-child { margin-bottom: 0; }
-  .field label { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
-  .field select {
-    width: 100%; font-family: 'Work Sans', sans-serif; font-size: 15px;
-    padding: 9px 10px; border: 2px solid #d8d8e0; border-radius: 8px; background: #fff;
-  }
+  .status-card p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .status-card p.ok { color: var(--accent); font-weight: 600; }
+  .status-card p.warn { color: var(--gold); font-weight: 600; }
 
   .btn {
     font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 17px;
-    padding: 13px 26px; border-radius: 12px; border: none; cursor: pointer;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    padding: 13px 26px; border-radius: 14px; border: none; cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.12s ease;
   }
   .btn:hover { transform: translateY(-2px); }
-  .btn-primary { background: var(--teal); color: #fff; box-shadow: 0 4px 0 var(--teal-dark); }
-  .btn-secondary { background: #fff; color: var(--teal); border: 2px solid var(--teal); box-shadow: none; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-primary { background: var(--accent); color: #0d0f10; }
+  .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
 
-  #btn-play { margin-top: 22px; width: 100%; }
+  #btn-play { margin-top: 20px; width: 260px; max-width: 100%; }
 
-  .howto { margin-top: 26px; font-size: 13.5px; color: var(--muted); max-width: 380px; line-height: 1.5; }
+  .howto { margin-top: 24px; font-size: 13.5px; color: var(--muted); max-width: 380px; line-height: 1.5; }
+  .link-line { margin-top: 16px; font-size: 13.5px; }
+  .link-line a { color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 1px dashed var(--accent); }
 
-  /* ---------- GAME ---------- */
-  #screen-game { position: fixed; inset: 0; display: none; z-index: 1; pointer-events: none; }
-  #screen-game.active { display: block; }
+  /* ---------- CANVAS COMPARTIDO ---------- */
   #pano-canvas { position: fixed; inset: 0; cursor: grab; touch-action: none; display: none; z-index: 0; }
   #pano-canvas.dragging { cursor: grabbing; }
   body.viewer-active #pano-canvas { display: block; }
+  body.game-active #pano-canvas { filter: grayscale(1) contrast(1.08) brightness(0.92); }
 
-  .link-line { margin-top: 18px; font-size: 13.5px; }
-  .link-line a { color: var(--teal); font-weight: 600; text-decoration: none; border-bottom: 1px dashed var(--teal); }
+  /* ---------- JUEGO ---------- */
+  #screen-game { position: fixed; inset: 0; display: none; z-index: 1; pointer-events: none; }
+  #screen-game.active { display: block; }
 
-  /* ---------- EDITOR DE NIVELES ---------- */
-  #screen-editor { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 1; pointer-events: none; }
-  #screen-editor.active { display: flex; }
-  .editor-topbar {
-    position: relative; z-index: 11; pointer-events: auto;
-    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-    padding: 14px 16px; background: rgba(255,255,255,0.96);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  .hud-top-left {
+    position: fixed; top: 18px; left: 18px; z-index: 10;
+    display: flex; flex-direction: column; gap: 8px;
   }
-  .editor-topbar input[type=text] {
-    font-size: 14px; padding: 8px 10px; border: 2px solid #d8d8e0; border-radius: 8px;
+  .hud-top-right {
+    position: fixed; top: 18px; right: 18px; z-index: 10;
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+    max-width: 46vw;
   }
-  #ed-image-url { flex: 1; min-width: 180px; }
-  #ed-word { width: 140px; text-transform: uppercase; }
-  .editor-topbar .btn { font-size: 14px; padding: 9px 16px; }
-  .editor-status {
-    position: fixed; top: 74px; left: 50%; transform: translateX(-50%);
-    background: rgba(27,27,27,0.85); color: #fff; padding: 8px 16px;
-    border-radius: 20px; font-size: 13.5px; z-index: 10; pointer-events: none;
-    text-align: center; max-width: 90vw;
-  }
-  .editor-panel {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 11; pointer-events: auto;
-    background: #fff; box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
-    padding: 14px 16px; max-height: 46vh; display: flex; flex-direction: column; gap: 8px;
-  }
-  .editor-panel textarea {
-    width: 100%; min-height: 90px; font-family: monospace; font-size: 12.5px;
-    padding: 10px; border: 2px solid #d8d8e0; border-radius: 8px; resize: vertical;
-  }
-  .editor-panel .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .editor-panel .row .btn { font-size: 14px; padding: 9px 16px; }
-  .editor-hint {
-    position: fixed; bottom: 46vh; left: 50%; transform: translateX(-50%);
-    margin-bottom: 10px; font-size: 12.5px; color: var(--muted);
-    background: rgba(255,255,255,0.85); padding: 5px 12px; border-radius: 20px; z-index: 10;
-    pointer-events: none;
-  }
-
-  .hud-top {
-    position: fixed; top: 0; left: 0; right: 0;
-    display: flex; align-items: flex-start; justify-content: space-between;
-    padding: 16px 18px; z-index: 10; gap: 10px; pointer-events: none;
-  }
-  .hud-pill {
-    background: rgba(255,255,255,0.94); border-radius: 14px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15); padding: 8px 16px;
+  .pill {
+    background: var(--panel-solid); border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    border-radius: 14px; padding: 8px 16px;
     font-family: 'Baloo 2', sans-serif;
   }
-  .hud-round { font-size: 14px; font-weight: 700; color: var(--muted); }
-  .hud-score { font-size: 14px; font-weight: 700; color: var(--teal); }
-  .hud-word { font-size: 26px; font-weight: 700; letter-spacing: 6px; }
-  .hud-timer { font-size: 28px; font-weight: 800; min-width: 56px; text-align: center; }
-  .hud-timer.low { color: var(--coral); }
-  .hud-left, .hud-right { display: flex; flex-direction: column; gap: 8px; }
+  .pill-timer { font-size: 26px; font-weight: 800; min-width: 84px; text-align: center; }
+  .pill-timer.low { color: var(--warn); }
+  .pill-score { font-size: 14px; font-weight: 700; color: var(--accent); }
+
+  .word-pill {
+    background: var(--panel-solid); border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    border-radius: 12px; padding: 7px 14px;
+    font-size: 17px; font-weight: 700; letter-spacing: 3px;
+    white-space: nowrap;
+  }
+  .word-pill.found { color: var(--accent); border-color: var(--accent); opacity: 0.75; text-decoration: line-through; letter-spacing: 1px; }
 
   .toast {
     position: fixed; top: 90px; left: 50%; transform: translateX(-50%);
-    background: var(--ink); color: #fff; padding: 8px 18px; border-radius: 20px;
+    background: var(--panel-solid); border: 1px solid var(--border); color: var(--text);
+    padding: 9px 20px; border-radius: 20px; backdrop-filter: blur(10px);
     font-size: 14px; font-weight: 600; z-index: 15; opacity: 0; pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(6px); }
-  .toast.wrong { background: var(--coral); }
-  .toast.right { background: var(--teal); }
+  .toast.wrong { border-color: var(--warn); color: var(--warn); }
+  .toast.right { border-color: var(--accent); color: var(--accent); }
 
   .guess-bar {
     position: fixed; bottom: 0; left: 0; right: 0;
@@ -165,81 +140,112 @@
     pointer-events: auto;
   }
   .guess-card {
-    background: #fff; border-radius: 16px; padding: 12px 14px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    background: var(--panel-solid); border: 1px solid var(--border); backdrop-filter: blur(10px);
+    border-radius: 16px; padding: 12px 14px;
     display: flex; gap: 10px; max-width: 440px; width: 100%;
   }
   .guess-card input {
     flex: 1; font-size: 16px; padding: 10px 12px;
-    border: 2px solid var(--teal); border-radius: 8px; min-width: 0;
+    border: 1px solid var(--border); border-radius: 10px; min-width: 0;
+    background: rgba(255,255,255,0.05); color: var(--text);
   }
-  .guess-card input:focus { outline: none; }
+  .guess-card input:focus { outline: none; border-color: var(--accent); }
+  .guess-card input::placeholder { color: var(--muted); }
 
   .drag-hint {
     position: fixed; bottom: 92px; left: 50%; transform: translateX(-50%);
-    font-size: 13px; color: rgba(27,27,27,0.55); z-index: 5;
-    background: rgba(255,255,255,0.7); padding: 5px 12px; border-radius: 20px;
+    font-size: 13px; color: var(--muted); z-index: 5;
+    background: var(--panel-solid); border: 1px solid var(--border); backdrop-filter: blur(10px);
+    padding: 6px 14px; border-radius: 20px;
     pointer-events: none; transition: opacity 0.4s ease;
   }
 
   /* ---------- OVERLAYS ---------- */
   .overlay-panel {
-    position: fixed; inset: 0; z-index: 20; background: rgba(27,27,27,0.55);
+    position: fixed; inset: 0; z-index: 20; background: rgba(5,6,7,0.72);
     display: none; align-items: center; justify-content: center; padding: 20px;
   }
   .overlay-panel.active { display: flex; }
   .overlay-card {
-    background: #fff; border-radius: 18px; padding: 30px 28px;
-    max-width: 400px; width: 100%; text-align: center;
+    background: var(--panel-solid); border: 1px solid var(--border); border-radius: 20px; padding: 30px 28px;
+    max-width: 420px; width: 100%; text-align: center;
   }
-  .overlay-card h2 { font-size: 24px; color: var(--teal); margin-bottom: 8px; }
-  .overlay-card .word-reveal { font-size: 22px; font-weight: 700; margin: 8px 0 4px; }
-  .overlay-card .points-line { font-size: 15px; color: var(--muted); margin-bottom: 16px; }
-  .overlay-card .points-line b { color: var(--teal); }
+  .overlay-card h2 { font-size: 24px; color: var(--accent); margin-bottom: 8px; }
+  .final-total { font-size: 34px; font-weight: 800; color: var(--accent); margin: 6px 0 20px; font-family: 'Baloo 2', sans-serif; }
+  .final-list { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; text-align: left; }
+  .final-row { display: flex; justify-content: space-between; font-size: 14.5px; padding: 7px 4px; border-bottom: 1px solid var(--border); }
+  .final-row.missed { color: var(--muted); }
+  .final-row .pts { color: var(--accent); font-weight: 700; }
   .final-trophy { font-size: 50px; }
-  .final-total { font-size: 34px; font-weight: 800; color: var(--teal); margin: 6px 0 20px; font-family: 'Baloo 2', sans-serif; }
+
+  /* ---------- EDITOR (mismo tono oscuro, pero sin filtro B/N para ver colores reales) ---------- */
+  #screen-editor { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 1; pointer-events: none; }
+  #screen-editor.active { display: flex; }
+  .editor-topbar {
+    position: relative; z-index: 11; pointer-events: auto;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 14px 16px; background: var(--panel-solid); border-bottom: 1px solid var(--border);
+  }
+  .editor-topbar input[type=text] {
+    font-size: 14px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+    background: rgba(255,255,255,0.05); color: var(--text);
+  }
+  #ed-image-url { flex: 1; min-width: 180px; }
+  #ed-word { width: 140px; text-transform: uppercase; }
+  .editor-topbar .btn { font-size: 14px; padding: 9px 16px; }
+  .editor-status {
+    position: fixed; top: 74px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.75); color: #fff; padding: 8px 16px;
+    border-radius: 20px; font-size: 13.5px; z-index: 10; pointer-events: none;
+    text-align: center; max-width: 90vw;
+  }
+  .editor-panel {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 11; pointer-events: auto;
+    background: var(--panel-solid); border-top: 1px solid var(--border);
+    padding: 14px 16px; max-height: 46vh; display: flex; flex-direction: column; gap: 8px;
+  }
+  .editor-panel textarea {
+    width: 100%; min-height: 90px; font-family: monospace; font-size: 12.5px;
+    padding: 10px; border: 1px solid var(--border); border-radius: 8px; resize: vertical;
+    background: rgba(255,255,255,0.04); color: var(--text);
+  }
+  .editor-panel .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .editor-panel .row .btn { font-size: 14px; padding: 9px 16px; }
+  .editor-panel .hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+  .editor-hint {
+    position: fixed; bottom: 46vh; left: 50%; transform: translateX(-50%);
+    margin-bottom: 10px; font-size: 12.5px; color: var(--muted);
+    background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 20px; z-index: 10;
+    pointer-events: none;
+  }
+  .hidden { display: none !important; }
 
   @media (max-width: 560px) {
-    .hud-word { font-size: 19px; letter-spacing: 3px; }
-    .hud-timer { font-size: 22px; }
-    .hud-pill { padding: 6px 11px; }
+    .pill-timer { font-size: 20px; }
+    .word-pill { font-size: 14px; letter-spacing: 2px; }
+    .hud-top-right { max-width: 60vw; }
   }
 </style>
 </head>
 <body>
 
+  <canvas id="pano-canvas"></canvas>
+
   <!-- ============ INICIO ============ -->
   <div class="screen active" id="screen-home">
     <a href="../" class="brand-link"><span class="mark">FCIIN</span><span class="sub">.io</span></a>
     <h1 class="hero-title">Ve<span class="hero-eye"></span>Veo 360°</h1>
-    <p class="hero-tagline">El ordenador esconde una palabra en una escena de 360º. Gira la cámara, busca pistas y adivínala antes de que se acabe el tiempo.</p>
+    <p class="hero-tagline">Encuentra los objetos escondidos en una foto de 360º antes de que se acabe el tiempo. Una palabra nueva aparece cada minuto.</p>
 
-    <div class="settings-card">
-      <div class="field">
-        <label>Rondas</label>
-        <select id="opt-rounds">
-          <option value="3">3</option>
-          <option value="5" selected>5</option>
-          <option value="8">8</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Segundos por ronda</label>
-        <select id="opt-time">
-          <option value="30">30s</option>
-          <option value="45" selected>45s</option>
-          <option value="60">60s</option>
-          <option value="90">90s</option>
-        </select>
-      </div>
+    <div class="status-card" id="status-card">
+      <p id="niveles-status">Cargando niveles…</p>
     </div>
 
-    <button class="btn btn-primary" id="btn-play">Jugar</button>
+    <button class="btn btn-primary" id="btn-play" disabled>Jugar</button>
 
-    <p class="howto">Arrastra para mirar alrededor. Al principio solo ves la primera letra — con el tiempo aparecen más, y cuando quede poco el objeto se iluminará para ayudarte.</p>
+    <p class="howto">Arrastra para mirar alrededor. Cada palabra empieza mostrando solo su primera letra — con el tiempo aparecen más, y hacia el final del reloj los objetos que aún no has encontrado se iluminan.</p>
 
-    <p class="link-line" id="niveles-status"></p>
-    <p class="link-line"><a href="#" id="btn-goto-editor">¿Quieres usar tus propias fotos 360? Abre el editor de niveles</a></p>
+    <p class="link-line"><a href="#" id="btn-goto-editor">Abrir el editor de niveles</a></p>
   </div>
 
   <!-- ============ EDITOR DE NIVELES ============ -->
@@ -258,25 +264,20 @@
       <div class="row">
         <button class="btn btn-primary" id="btn-add-level" disabled>Añadir este nivel a la lista</button>
         <button class="btn btn-secondary" id="btn-copy-levels" disabled>Copiar código</button>
-        <button class="btn btn-ghost" id="btn-clear-levels">Vaciar lista</button>
+        <button class="btn btn-secondary" id="btn-clear-levels">Vaciar lista</button>
       </div>
       <p class="hint">Pega esto dentro del array <code>NIVELES</code> en tu archivo <code>niveles.js</code>:</p>
       <textarea id="ed-output" readonly placeholder="Aquí aparecerá el código de tus niveles a medida que los añadas…"></textarea>
     </div>
   </div>
 
-  <canvas id="pano-canvas"></canvas>
-
   <!-- ============ JUEGO ============ -->
   <div class="screen" id="screen-game">
-    <div class="hud-top">
-      <div class="hud-left">
-        <div class="hud-pill hud-round" id="hud-round">Ronda 1/5</div>
-        <div class="hud-pill hud-score">Puntos: <span id="hud-score">0</span></div>
-      </div>
-      <div class="hud-pill hud-word" id="hud-word">_ _ _ _</div>
-      <div class="hud-pill hud-timer" id="hud-timer">45</div>
+    <div class="hud-top-left">
+      <div class="pill pill-timer" id="hud-timer">5:00</div>
+      <div class="pill pill-score">Puntos: <span id="hud-score">0</span></div>
     </div>
+    <div class="hud-top-right" id="word-list"></div>
 
     <div class="toast" id="toast"></div>
     <div class="drag-hint" id="drag-hint">Arrastra para mirar alrededor</div>
@@ -289,22 +290,13 @@
     </div>
   </div>
 
-  <!-- ============ FIN DE RONDA ============ -->
-  <div class="overlay-panel" id="overlay-round">
-    <div class="overlay-card">
-      <h2 id="round-result-title">¡Bien!</h2>
-      <div class="word-reveal" id="round-word"></div>
-      <div class="points-line" id="round-points"></div>
-      <button class="btn btn-primary" id="btn-next-round" style="width:100%;">Siguiente ronda</button>
-    </div>
-  </div>
-
   <!-- ============ FINAL ============ -->
   <div class="overlay-panel" id="overlay-final">
     <div class="overlay-card">
       <div class="final-trophy">🏆</div>
       <h2>¡Partida terminada!</h2>
       <div class="final-total" id="final-total">0 pts</div>
+      <div class="final-list" id="final-list"></div>
       <button class="btn btn-primary" id="btn-play-again" style="width:100%; margin-bottom:10px;">Jugar otra vez</button>
       <button class="btn btn-secondary" id="btn-home-again" style="width:100%;">Volver al inicio</button>
     </div>
@@ -315,214 +307,11 @@
 (function () {
   "use strict";
 
-  // niveles.js define window.NIVELES si el usuario ha creado sus propios
-  // niveles con el editor. Si no existe o está vacío, se usa el modo
-  // demo con objetos 3D generados y la foto de ejemplo.
   const NIVELES = (typeof window !== "undefined" && Array.isArray(window.NIVELES)) ? window.NIVELES : [];
-
-  /* ============================================================
-     BANCO DE OBJETOS
-     Cada objeto sabe construir su propia forma 3D (grupo de mallas
-     simples) y si va "anclado al suelo" o "flotante" (nubes, sol...).
-     Puedes añadir los tuyos siguiendo el mismo patrón: solo necesitas
-     una palabra y una función build() que devuelva un THREE.Group.
-     ============================================================ */
-  function mat(color, emissive) {
-    return new THREE.MeshStandardMaterial({ color: color, emissive: emissive || 0x000000, emissiveIntensity: 0.25, roughness: 0.6, metalness: 0.05 });
-  }
-
-  function starShape(points, outerR, innerR) {
-    const shape = new THREE.Shape();
-    const step = Math.PI / points;
-    for (let i = 0; i < points * 2; i++) {
-      const r = i % 2 === 0 ? outerR : innerR;
-      const a = i * step - Math.PI / 2;
-      const x = Math.cos(a) * r, y = Math.sin(a) * r;
-      if (i === 0) shape.moveTo(x, y); else shape.lineTo(x, y);
-    }
-    shape.closePath();
-    return shape;
-  }
-
-  function heartShape() {
-    const s = new THREE.Shape();
-    s.moveTo(0, -1.1);
-    s.bezierCurveTo(-1.6, 0.6, -1.5, 1.6, -0.65, 1.6);
-    s.bezierCurveTo(-0.2, 1.6, 0, 1.2, 0, 1.0);
-    s.bezierCurveTo(0, 1.2, 0.2, 1.6, 0.65, 1.6);
-    s.bezierCurveTo(1.5, 1.6, 1.6, 0.6, 0, -1.1);
-    return s;
-  }
-
-  const OBJECTS = [
-    { word: "pelota", ground: true, build: function () {
-      const g = new THREE.Group();
-      const s = new THREE.Mesh(new THREE.SphereGeometry(0.7, 20, 16), mat(0xE8604C));
-      s.position.y = 0.7; g.add(s); return g;
-    }},
-    { word: "cubo", ground: true, build: function () {
-      const g = new THREE.Group();
-      const b = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), mat(0xF2A93B));
-      b.position.y = 0.6; g.add(b); return g;
-    }},
-    { word: "arbol", ground: true, label: "árbol", build: function () {
-      const g = new THREE.Group();
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 1.4, 10), mat(0x7A4E2E));
-      trunk.position.y = 0.7; g.add(trunk);
-      const top = new THREE.Mesh(new THREE.ConeGeometry(1.1, 2.0, 12), mat(0x2F7A45));
-      top.position.y = 2.2; g.add(top); return g;
-    }},
-    { word: "casa", ground: true, build: function () {
-      const g = new THREE.Group();
-      const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.3, 1.6), mat(0xEADFC8));
-      body.position.y = 0.65; g.add(body);
-      const roof = new THREE.Mesh(new THREE.ConeGeometry(1.5, 1.0, 4), mat(0xB33B3B));
-      roof.rotation.y = Math.PI / 4; roof.position.y = 1.8; g.add(roof); return g;
-    }},
-    { word: "coche", ground: true, build: function () {
-      const g = new THREE.Group();
-      const body = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 1.1), mat(0x3B6EA5));
-      body.position.y = 0.55; g.add(body);
-      const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.5, 1.0), mat(0xBFDDF2));
-      cabin.position.set(-0.1, 1.0, 0); g.add(cabin);
-      const wheelGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.25, 14);
-      [[-0.75, 0.32, 0.5], [0.75, 0.32, 0.5], [-0.75, 0.32, -0.5], [0.75, 0.32, -0.5]].forEach(function (p) {
-        const w = new THREE.Mesh(wheelGeo, mat(0x1B1B1B));
-        w.rotation.z = Math.PI / 2; w.position.set(p[0], p[1], p[2]); g.add(w);
-      });
-      return g;
-    }},
-    { word: "taza", ground: true, build: function () {
-      const g = new THREE.Group();
-      const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.45, 0.8, 18, 1, true), mat(0xffffff));
-      cup.material.side = THREE.DoubleSide; cup.position.y = 0.6; g.add(cup);
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.06, 18), mat(0xffffff));
-      base.position.y = 0.2; g.add(base);
-      const handle = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.08, 8, 16, Math.PI), mat(0xffffff));
-      handle.position.set(0.55, 0.6, 0); handle.rotation.y = Math.PI / 2; g.add(handle);
-      return g;
-    }},
-    { word: "sol", ground: false, build: function () {
-      const g = new THREE.Group();
-      const core = new THREE.Mesh(new THREE.SphereGeometry(0.9, 20, 16), mat(0xFFD966, 0xFFC233));
-      core.material.emissiveIntensity = 0.7; g.add(core);
-      const rayGeo = new THREE.ConeGeometry(0.14, 0.5, 6);
-      for (let i = 0; i < 8; i++) {
-        const ray = new THREE.Mesh(rayGeo, mat(0xFFD966, 0xFFC233));
-        const a = (i / 8) * Math.PI * 2;
-        ray.position.set(Math.cos(a) * 1.25, Math.sin(a) * 1.25, 0);
-        ray.rotation.z = a - Math.PI / 2;
-        g.add(ray);
-      }
-      return g;
-    }},
-    { word: "luna", ground: false, build: function () {
-      const g = new THREE.Group();
-      const moon = new THREE.Mesh(new THREE.SphereGeometry(0.8, 18, 14), mat(0xE7E4DC));
-      g.add(moon);
-      const craterGeo = new THREE.SphereGeometry(0.14, 8, 6);
-      [[0.5, 0.3, 0.55], [-0.3, -0.2, 0.6], [0.1, -0.5, 0.55]].forEach(function (p) {
-        const c = new THREE.Mesh(craterGeo, mat(0xCFCBC0));
-        c.position.set(p[0], p[1], p[2]); g.add(c);
-      });
-      return g;
-    }},
-    { word: "nube", ground: false, build: function () {
-      const g = new THREE.Group();
-      const geo = new THREE.SphereGeometry(0.55, 14, 10);
-      [[0, 0, 0], [0.55, 0.08, 0], [-0.55, 0.08, 0], [0.25, 0.35, 0.1], [-0.25, 0.32, -0.1]].forEach(function (p) {
-        const c = new THREE.Mesh(geo, mat(0xffffff));
-        c.position.set(p[0], p[1], p[2]); g.add(c);
-      });
-      return g;
-    }},
-    { word: "regalo", ground: true, build: function () {
-      const g = new THREE.Group();
-      const box = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.0, 1.1), mat(0xB33B3B));
-      box.position.y = 0.5; g.add(box);
-      const ribbonV = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.02, 1.14), mat(0xFFD966));
-      ribbonV.position.y = 0.5; g.add(ribbonV);
-      const ribbonH = new THREE.Mesh(new THREE.BoxGeometry(1.14, 1.02, 0.18), mat(0xFFD966));
-      ribbonH.position.y = 0.5; g.add(ribbonH);
-      const bow = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.08, 8, 14), mat(0xFFD966));
-      bow.position.y = 1.05; bow.rotation.x = Math.PI / 2; g.add(bow);
-      return g;
-    }},
-    { word: "paraguas", ground: true, build: function () {
-      const g = new THREE.Group();
-      const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.6, 8), mat(0x3B3B3B));
-      handle.position.y = 0.8; g.add(handle);
-      const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.0, 0.55, 10, 1, true), mat(0x3B6EA5));
-      canopy.material.side = THREE.DoubleSide; canopy.position.y = 1.7; g.add(canopy);
-      return g;
-    }},
-    { word: "estrella", ground: false, build: function () {
-      const shape = starShape(5, 0.9, 0.38);
-      const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.22, bevelEnabled: false });
-      const m = new THREE.Mesh(geo, mat(0xFFD966, 0xC99A2E));
-      m.rotation.x = -0.3; return m;
-    }},
-    { word: "corazon", label: "corazón", ground: false, build: function () {
-      const shape = heartShape();
-      const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.3, bevelEnabled: false });
-      geo.scale(0.55, 0.55, 0.55);
-      geo.rotateZ(Math.PI);
-      const m = new THREE.Mesh(geo, mat(0xE8604C, 0x8f2c20));
-      return m;
-    }},
-    { word: "flor", ground: true, build: function () {
-      const g = new THREE.Group();
-      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.3, 8), mat(0x3E8E4F));
-      stem.position.y = 0.65; g.add(stem);
-      const center = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), mat(0xFFD966));
-      center.position.y = 1.35; g.add(center);
-      const petalGeo = new THREE.SphereGeometry(0.2, 10, 8);
-      for (let i = 0; i < 6; i++) {
-        const a = (i / 6) * Math.PI * 2;
-        const p = new THREE.Mesh(petalGeo, mat(0xE889B8));
-        p.scale.set(1, 0.6, 0.6);
-        p.position.set(Math.cos(a) * 0.34, 1.35 + Math.sin(a) * 0.34, 0);
-        g.add(p);
-      }
-      return g;
-    }},
-    { word: "pez", ground: false, build: function () {
-      const g = new THREE.Group();
-      const body = new THREE.Mesh(new THREE.SphereGeometry(0.55, 14, 10), mat(0x3B9AD6));
-      body.scale.set(1.3, 0.8, 0.7); g.add(body);
-      const tail = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 8), mat(0x3B9AD6));
-      tail.rotation.z = Math.PI / 2; tail.position.x = -0.85; g.add(tail);
-      return g;
-    }},
-    { word: "globo", ground: false, build: function () {
-      const g = new THREE.Group();
-      const balloon = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 14), mat(0xD6486B));
-      balloon.scale.set(0.9, 1.15, 0.9); g.add(balloon);
-      const knot = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.14, 8), mat(0xD6486B));
-      knot.position.y = -0.72; g.add(knot);
-      const stringPts = [];
-      for (let i = 0; i <= 10; i++) stringPts.push(new THREE.Vector3(Math.sin(i * 0.6) * 0.05, -0.8 - i * 0.13, 0));
-      const stringGeo = new THREE.BufferGeometry().setFromPoints(stringPts);
-      const string = new THREE.Line(stringGeo, new THREE.LineBasicMaterial({ color: 0x555555 }));
-      g.add(string);
-      return g;
-    }},
-    { word: "silla", ground: true, build: function () {
-      const g = new THREE.Group();
-      const seat = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.12, 1.0), mat(0x8C5A34));
-      seat.position.y = 0.9; g.add(seat);
-      const back = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 0.12), mat(0x8C5A34));
-      back.position.set(0, 1.4, -0.44); g.add(back);
-      const legGeo = new THREE.BoxGeometry(0.1, 0.9, 0.1);
-      [[-0.42, 0.45, -0.42], [0.42, 0.45, -0.42], [-0.42, 0.45, 0.42], [0.42, 0.45, 0.42]].forEach(function (p) {
-        const l = new THREE.Mesh(legGeo, mat(0x8C5A34));
-        l.position.set(p[0], p[1], p[2]); g.add(l);
-      });
-      return g;
-    }}
-  ];
-
-  function displayWord(o) { return o.label || o.word; }
+  const GAME_SECONDS = 300; // 5 minutos, fijo
+  const WORD_INTERVAL = 60; // una palabra nueva cada minuto
+  const MAX_WORDS = 5;
+  const HINT_WINDOW = 45; // últimos segundos: se iluminan los objetos que faltan
 
   /* ============================================================
      ESCENA 360º
@@ -534,50 +323,38 @@
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-  /*
-    Foto 360 real como fondo: una esfera gigante invertida (por eso el
-    scale(-1,1,1): así la textura queda "por dentro", envolviendo al
-    jugador, en vez de por fuera). Puedes cambiar PANORAMA_URL por tu
-    propia foto equirectangular (relación de aspecto 2:1) alojándola
-    en tu repo, por ejemplo "panos/mi-foto.jpg".
-  */
-  const PANORAMA_URL = "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/2294472375_24a3b8ef46_o.jpg";
-
   const skyGeo = new THREE.SphereGeometry(400, 48, 32);
   skyGeo.scale(-1, 1, 1);
-  const skyMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const skyMat = new THREE.MeshBasicMaterial({ color: 0x232427 });
   const skySphere = new THREE.Mesh(skyGeo, skyMat);
   scene.add(skySphere);
-
   skyMat.userData.currentUrl = null;
+
   function loadPanorama(url, onDone) {
     skyMat.userData.currentUrl = url;
     new THREE.TextureLoader().load(url, function (tex) {
-      if (skyMat.userData.currentUrl !== url) return; // se pidió otra foto mientras cargaba
+      if (skyMat.userData.currentUrl !== url) return;
       skyMat.map = tex;
       skyMat.color.set(0xffffff);
       skyMat.needsUpdate = true;
       if (onDone) onDone(true);
     }, undefined, function () {
-      // Si la imagen no carga (URL rota, sin conexión...), fondo neutro en vez de romper el juego.
       skyMat.map = null;
-      skyMat.color.set(0xBFD9E8);
+      skyMat.color.set(0x3a3d42);
       skyMat.needsUpdate = true;
       if (onDone) onDone(false);
     });
   }
-  loadPanorama(PANORAMA_URL);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x666666, 1.0));
-  const sun = new THREE.DirectionalLight(0xffffff, 0.9);
-  sun.position.set(6, 10, 4);
-  scene.add(sun);
+  function resize() {
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", resize);
+  resize();
 
-  /* ------------------------------------------------------------
-     Conversión dirección 3D <-> yaw/pitch (grados). Se usa tanto
-     para colocar la pista sobre un nivel personalizado como para
-     que el editor calcule las coordenadas al hacer click.
-     ------------------------------------------------------------ */
+  /* --- Conversión dirección 3D <-> yaw/pitch (grados) --- */
   function directionFromYawPitch(yawDeg, pitchDeg) {
     const yaw = THREE.MathUtils.degToRad(yawDeg);
     const pitch = THREE.MathUtils.degToRad(pitchDeg);
@@ -605,30 +382,30 @@
     ctx.fillRect(0, 0, 128, 128);
     return new THREE.CanvasTexture(c);
   }
-  const hintMarker = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlowTexture(), transparent: true, depthTest: false }));
-  hintMarker.scale.set(16, 16, 1);
-  hintMarker.visible = false;
-  hintMarker.renderOrder = 999;
-  scene.add(hintMarker);
+  const GLOW_TEX = makeGlowTexture();
   const HINT_MARKER_RADIUS = 60;
 
-  function placeHintMarker(yawDeg, pitchDeg) {
-    const dir = directionFromYawPitch(yawDeg, pitchDeg);
-    hintMarker.position.copy(dir.multiplyScalar(HINT_MARKER_RADIUS));
+  function makeHintMarker() {
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, transparent: true, depthTest: false }));
+    sprite.scale.set(16, 16, 1);
+    sprite.visible = false;
+    sprite.renderOrder = 999;
+    scene.add(sprite);
+    return sprite;
   }
+  // Pool de marcadores (hasta MAX_WORDS objetivos activos a la vez)
+  const hintMarkers = [];
+  for (let i = 0; i < MAX_WORDS; i++) hintMarkers.push(makeHintMarker());
 
-  function resize() {
-    renderer.setSize(window.innerWidth, window.innerHeight, false);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+  function placeHintMarker(sprite, yawDeg, pitchDeg) {
+    const dir = directionFromYawPitch(yawDeg, pitchDeg);
+    sprite.position.copy(dir.multiplyScalar(HINT_MARKER_RADIUS));
   }
-  window.addEventListener("resize", resize);
-  resize();
 
   /* --- Cámara: mirar alrededor arrastrando (como GeoGuessr) --- */
   let yaw = 0, pitch = 0;
   let dragging = false, lastX = 0, lastY = 0;
-  let downX = 0, downY = 0, movedDistance = 0;
+  let movedDistance = 0;
   let downOnCanvas = false;
   let editorMode = false;
 
@@ -639,7 +416,7 @@
   }
 
   function pointerDown(x, y) {
-    dragging = true; lastX = x; lastY = y; downX = x; downY = y; movedDistance = 0;
+    dragging = true; lastX = x; lastY = y; movedDistance = 0;
     downOnCanvas = true;
     canvas.classList.add("dragging");
   }
@@ -673,158 +450,85 @@
     pointerUp(t ? t.clientX : undefined, t ? t.clientY : undefined);
   });
 
-  let currentTargetMesh = null;
-  let hintActive = false;
-  let placedObjects = [];
-  let currentHintMode = "object"; // "object" (demo) o "point" (niveles con foto propia)
+  /* ============================================================
+     ESTADO DE LA PARTIDA
+     ============================================================ */
+  let activeWords = []; // { level, marker, revealed[], appeared, found, appearAtRemaining }
+  let timeLeft = GAME_SECONDS;
+  let score = 0;
+  let tickTimer = null;
+  let gameActive = false;
 
   function animate() {
     requestAnimationFrame(animate);
-    if (hintActive) {
-      const t = performance.now() * 0.004;
-      const pulse = 0.6 + Math.sin(t) * 0.4;
-      if (currentHintMode === "object" && currentTargetMesh) {
-        setEmissivePulse(currentTargetMesh, pulse);
-      } else if (currentHintMode === "point") {
-        hintMarker.visible = true;
-        hintMarker.material.opacity = 0.35 + pulse * 0.65;
+    const t = performance.now() * 0.004;
+    const pulse = 0.35 + (0.5 + Math.sin(t) * 0.5) * 0.65;
+    activeWords.forEach(function (w) {
+      if (w.appeared && !w.found && w.hintOn) {
+        w.marker.visible = true;
+        w.marker.material.opacity = pulse;
+      } else {
+        w.marker.visible = false;
       }
-    } else if (currentHintMode === "point") {
-      hintMarker.visible = false;
-    }
+    });
     renderer.render(scene, camera);
   }
   animate();
 
-  function setEmissivePulse(root, intensity) {
-    root.traverse(function (obj) {
-      if (obj.isMesh && obj.material) {
-        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-        mats.forEach(function (m) {
-          if (m.emissive) {
-            if (m.userData.baseEmissiveIntensity === undefined) m.userData.baseEmissiveIntensity = m.emissiveIntensity || 0.25;
-            m.emissive.setHex(0xFFD966);
-            m.emissiveIntensity = Math.max(m.userData.baseEmissiveIntensity, intensity);
-          }
-        });
-      }
-    });
+  function normalize(s) {
+    return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
   }
 
-  /* ============================================================
-     ESTADO DEL JUEGO
-     ============================================================ */
-  const state = {
-    rounds: 5,
-    roundTime: 45,
-    round: 0,
-    score: 0,
-    timeLeft: 0,
-    word: "",
-    revealed: [],
-    revealTimer: null,
-    tickTimer: null,
-    active: false,
-    guessedRight: false
-  };
+  function formatTime(s) {
+    const m = Math.floor(Math.max(0, s) / 60);
+    const sec = Math.max(0, s) % 60;
+    return m + ":" + (sec < 10 ? "0" : "") + sec;
+  }
 
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
+  function pickSessionLevels() {
+    const byImage = {};
+    NIVELES.forEach(function (lv) {
+      if (!byImage[lv.image]) byImage[lv.image] = [];
+      byImage[lv.image].push(lv);
+    });
+    let bestImage = null, bestList = [];
+    Object.keys(byImage).forEach(function (img) {
+      if (byImage[img].length > bestList.length) { bestImage = img; bestList = byImage[img]; }
+    });
+    const shuffled = bestList.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    return a;
+    return { image: bestImage, levels: shuffled.slice(0, MAX_WORDS) };
   }
 
-  let sceneShadows = [];
-
-  function clearScene() {
-    placedObjects.forEach(function (p) { scene.remove(p.mesh); });
-    sceneShadows.forEach(function (s) { scene.remove(s); });
-    placedObjects = [];
-    sceneShadows = [];
-    currentTargetMesh = null;
-  }
-
-  let levelQueue = [];
-  function nextCustomLevel() {
-    if (!levelQueue.length) levelQueue = shuffle(NIVELES);
-    return levelQueue.shift();
-  }
-
-  function buildRoundScene() {
-    clearScene();
-    hintMarker.visible = false;
-
-    if (NIVELES.length > 0) {
-      currentHintMode = "point";
-      const level = nextCustomLevel();
-      loadPanorama(level.image);
-      placeHintMarker(level.yaw || 0, level.pitch || 0);
-      return { word: level.word };
-    }
-
-    currentHintMode = "object";
-    if (skyMat.userData.currentUrl !== PANORAMA_URL) loadPanorama(PANORAMA_URL);
-
-    const count = 6 + Math.floor(Math.random() * 3); // 6-8 objetos
-    const chosen = shuffle(OBJECTS).slice(0, count);
-    const angleStep = (Math.PI * 2) / chosen.length;
-
-    chosen.forEach(function (def, i) {
-      const mesh = def.build();
-      const angle = i * angleStep + (Math.random() - 0.5) * angleStep * 0.35;
-      const radius = 6.5 + Math.random() * 3.5;
-      const x = Math.sin(angle) * radius;
-      const z = -Math.cos(angle) * radius;
-      let y = 0;
-      if (!def.ground) {
-        y = 1.6 + Math.random() * 1.8;
-      } else {
-        const shadow = new THREE.Mesh(
-          new THREE.CircleGeometry(0.9, 20),
-          new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22 })
-        );
-        shadow.rotation.x = -Math.PI / 2;
-        shadow.position.set(x, 0.015, z);
-        scene.add(shadow);
-        sceneShadows.push(shadow);
-      }
-      mesh.position.set(x, y, z);
-      mesh.rotation.y = Math.random() * Math.PI * 2;
-      scene.add(mesh);
-      placedObjects.push({ def: def, mesh: mesh });
-    });
-
-    const targetEntry = placedObjects[Math.floor(Math.random() * placedObjects.length)];
-    currentTargetMesh = targetEntry.mesh;
-    return targetEntry.def;
-  }
-
-  /* --- Revelado progresivo de letras --- */
-  function buildRevealSchedule(word, totalSeconds) {
-    // Índice 0 siempre visible. El resto se reparte en el tiempo,
-    // dejando la última letra oculta hasta casi el final.
+  function buildRevealSchedule(word, availableSeconds) {
     const letterIdx = [];
     for (let i = 1; i < word.length; i++) letterIdx.push(i);
-    const usable = Math.max(1, totalSeconds - 3);
-    const schedule = [];
-    letterIdx.forEach(function (idx, n) {
+    const usable = Math.max(1, availableSeconds - 3);
+    return letterIdx.map(function (idx, n) {
       const frac = (n + 1) / (letterIdx.length + 1);
-      schedule.push({ idx: idx, atSecondsElapsed: Math.round(frac * usable * 0.85) });
+      return { idx: idx, atElapsed: Math.round(frac * usable * 0.85) };
     });
-    return schedule;
   }
 
-  function currentMask() {
-    return state.word.split("").map(function (ch, i) {
-      return state.revealed[i] ? ch : "_";
+  function wordMask(w) {
+    return w.level.word.split("").map(function (ch, i) {
+      return w.revealed[i] ? ch : "_";
     }).join(" ").toUpperCase();
   }
 
-  function normalize(s) {
-    return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  function renderWordList() {
+    const el = document.getElementById("word-list");
+    el.innerHTML = "";
+    activeWords.forEach(function (w) {
+      if (!w.appeared) return;
+      const div = document.createElement("div");
+      div.className = "word-pill" + (w.found ? " found" : "");
+      div.textContent = w.found ? w.level.word.toUpperCase() + " ✓" : wordMask(w);
+      el.appendChild(div);
+    });
   }
 
   function showToast(msg, kind) {
@@ -835,106 +539,118 @@
     showToast._tm = setTimeout(function () { t.classList.remove("show"); }, 1400);
   }
 
-  function startRound() {
-    state.round++;
-    state.guessedRight = false;
-    hintActive = false;
+  function startSession() {
+    const session = pickSessionLevels();
+    if (!session.image || !session.levels.length) return false;
 
-    const def = buildRoundScene();
-    state.word = def.word;
-    state.revealed = def.word.split("").map(function (_, i) { return i === 0; });
-    state.timeLeft = state.roundTime;
-
-    document.getElementById("hud-round").textContent = "Ronda " + state.round + "/" + state.rounds;
-    document.getElementById("hud-word").textContent = currentMask();
-    document.getElementById("hud-timer").textContent = state.timeLeft;
+    loadPanorama(session.image);
+    timeLeft = GAME_SECONDS;
+    score = 0;
+    document.getElementById("hud-score").textContent = "0";
+    document.getElementById("hud-timer").textContent = formatTime(timeLeft);
     document.getElementById("hud-timer").classList.remove("low");
-    document.getElementById("guess-input").value = "";
-    document.getElementById("drag-hint").style.opacity = state.round === 1 ? "1" : "0";
 
+    activeWords = session.levels.map(function (level, i) {
+      return {
+        level: level,
+        marker: hintMarkers[i],
+        revealed: level.word.split("").map(function (_, idx) { return idx === 0; }),
+        appeared: false,
+        found: false,
+        hintOn: false,
+        schedule: null,
+        appearAtRemaining: GAME_SECONDS - i * WORD_INTERVAL
+      };
+    });
+
+    renderWordList();
+    processWordTimers();
+    document.getElementById("drag-hint").style.opacity = "1";
     yaw = Math.random() * Math.PI * 2;
     pitch = 0;
     applyCameraRotation();
 
-    const schedule = buildRevealSchedule(def.word, state.roundTime);
-    let elapsed = 0;
-    const hintThreshold = Math.max(6, Math.round(state.roundTime * 0.22));
-
-    clearInterval(state.tickTimer);
-    state.tickTimer = setInterval(function () {
-      if (!state.active) return;
-      elapsed++;
-      state.timeLeft--;
-
-      schedule.forEach(function (s) {
-        if (s.atSecondsElapsed === elapsed) state.revealed[s.idx] = true;
-      });
-      document.getElementById("hud-word").textContent = currentMask();
-      document.getElementById("hud-timer").textContent = Math.max(0, state.timeLeft);
-
-      if (state.timeLeft <= Math.round(state.roundTime * 0.25)) {
-        document.getElementById("hud-timer").classList.add("low");
-      }
-      if (state.timeLeft <= hintThreshold && !hintActive) {
-        hintActive = true;
-      }
-      if (state.timeLeft <= 0) {
-        endRound(false);
-      }
-    }, 1000);
-
-    state.active = true;
+    clearInterval(tickTimer);
+    tickTimer = setInterval(gameTick, 1000);
+    gameActive = true;
+    return true;
   }
 
-  function endRound(guessedRight) {
-    state.active = false;
-    clearInterval(state.tickTimer);
-    hintActive = false;
-    if (currentTargetMesh) setEmissivePulse(currentTargetMesh, currentTargetMesh.userData.baseEmissiveIntensity || 0);
+  function processWordTimers() {
+    let changed = false;
+    activeWords.forEach(function (w) {
+      if (!w.appeared && timeLeft <= w.appearAtRemaining) {
+        w.appeared = true;
+        w.schedule = buildRevealSchedule(w.level.word, w.appearAtRemaining);
+        placeHintMarker(w.marker, w.level.yaw || 0, w.level.pitch || 0);
+        changed = true;
+      }
+      if (w.appeared && !w.found && w.schedule) {
+        const elapsed = w.appearAtRemaining - timeLeft;
+        w.schedule.forEach(function (s) {
+          if (s.atElapsed === elapsed) { w.revealed[s.idx] = true; changed = true; }
+        });
+      }
+      if (w.appeared && !w.found) {
+        w.hintOn = timeLeft <= HINT_WINDOW;
+      }
+    });
+    if (changed) renderWordList();
+  }
 
-    let points = 0;
-    if (guessedRight) {
-      points = Math.max(120, Math.round(1000 * (state.timeLeft / state.roundTime)));
-      state.score += points;
+  function gameTick() {
+    if (!gameActive) return;
+    timeLeft--;
+    document.getElementById("hud-timer").textContent = formatTime(timeLeft);
+    if (timeLeft <= 30) document.getElementById("hud-timer").classList.add("low");
+
+    processWordTimers();
+
+    const allDone = activeWords.every(function (w) { return w.appeared && w.found; });
+    if (timeLeft <= 0 || allDone) {
+      endSession();
     }
-
-    document.getElementById("round-result-title").textContent = guessedRight ? "¡Bien!" : "¡Se acabó el tiempo!";
-    document.getElementById("round-word").textContent = "La palabra era: " + revealWordText();
-    document.getElementById("round-points").innerHTML = guessedRight
-      ? "Has ganado <b>" + points + " pts</b>"
-      : "No has acertado esta vez — <b>0 pts</b>";
-    document.getElementById("hud-score").textContent = state.score;
-
-    document.getElementById("btn-next-round").textContent = state.round >= state.rounds ? "Ver resultado final" : "Siguiente ronda";
-    document.getElementById("overlay-round").classList.add("active");
-  }
-
-  function currentRoundLabel() {
-    const found = OBJECTS.find(function (o) { return o.word === state.word; });
-    return found ? found.label : null;
-  }
-
-  function revealWordText() {
-    if (currentHintMode === "object") {
-      return displayWord({ word: state.word, label: currentRoundLabel() }).toUpperCase();
-    }
-    return state.word.toUpperCase();
   }
 
   function submitGuess() {
-    if (!state.active) return;
+    if (!gameActive) return;
     const input = document.getElementById("guess-input");
     const val = normalize(input.value);
     input.value = "";
     if (!val) return;
-    if (val === normalize(state.word)) {
-      state.revealed = state.revealed.map(function () { return true; });
-      document.getElementById("hud-word").textContent = currentMask();
-      showToast("¡Correcto!", "right");
-      endRound(true);
+
+    const match = activeWords.find(function (w) {
+      return w.appeared && !w.found && normalize(w.level.word) === val;
+    });
+
+    if (match) {
+      match.found = true;
+      match.revealed = match.revealed.map(function () { return true; });
+      const pts = Math.max(150, Math.round(1000 * (timeLeft / GAME_SECONDS)));
+      score += pts;
+      document.getElementById("hud-score").textContent = score;
+      showToast("¡Correcto! " + match.level.word.toUpperCase() + " (+" + pts + ")", "right");
+      renderWordList();
     } else {
       showToast("No es eso…", "wrong");
     }
+  }
+
+  function endSession() {
+    gameActive = false;
+    clearInterval(tickTimer);
+
+    const finalList = document.getElementById("final-list");
+    finalList.innerHTML = "";
+    activeWords.forEach(function (w) {
+      if (!w.appeared) return;
+      const row = document.createElement("div");
+      row.className = "final-row" + (w.found ? "" : " missed");
+      row.innerHTML = "<span>" + w.level.word.toUpperCase() + "</span><span class=\"pts\">" + (w.found ? "encontrada" : "no encontrada") + "</span>";
+      finalList.appendChild(row);
+    });
+    document.getElementById("final-total").textContent = score + " pts";
+    document.getElementById("overlay-final").classList.add("active");
   }
 
   /* ============================================================
@@ -944,36 +660,41 @@
   const screenGame = document.getElementById("screen-game");
   const screenEditor = document.getElementById("screen-editor");
 
-  const nivelesStatusEl = document.getElementById("niveles-status");
-  nivelesStatusEl.textContent = NIVELES.length > 0
-    ? "Usando tus " + NIVELES.length + " niveles de niveles.js 🎉"
-    : "Ahora mismo estás en modo demo (objetos generados). Añade tus fotos con el editor para jugar con ellas.";
+  function refreshHomeStatus() {
+    const el = document.getElementById("niveles-status");
+    const btnPlay = document.getElementById("btn-play");
+    if (NIVELES.length === 0) {
+      el.textContent = "Todavía no tienes niveles. Abre el editor de abajo, marca objetos sobre tus fotos y pega el código en niveles.js.";
+      el.className = "warn";
+      btnPlay.disabled = true;
+      return;
+    }
+    const session = pickSessionLevels();
+    el.textContent = "Listo: " + session.levels.length + " objeto" + (session.levels.length === 1 ? "" : "s") + " escondidos en tu foto. Partida de 5 minutos.";
+    el.className = "ok";
+    btnPlay.disabled = session.levels.length === 0;
+  }
+  refreshHomeStatus();
 
   function goHome() {
     screenHome.classList.add("active");
     screenGame.classList.remove("active");
     screenEditor.classList.remove("active");
-    document.getElementById("overlay-round").classList.remove("active");
     document.getElementById("overlay-final").classList.remove("active");
-    document.body.classList.remove("viewer-active");
-    clearInterval(state.tickTimer);
-    state.active = false;
+    document.body.classList.remove("viewer-active", "game-active");
+    clearInterval(tickTimer);
+    gameActive = false;
     editorMode = false;
+    refreshHomeStatus();
   }
 
   function startGame() {
-    state.rounds = parseInt(document.getElementById("opt-rounds").value, 10);
-    state.roundTime = parseInt(document.getElementById("opt-time").value, 10);
-    state.round = 0;
-    state.score = 0;
-    document.getElementById("hud-score").textContent = "0";
-
     editorMode = false;
+    if (!startSession()) return;
     screenHome.classList.remove("active");
     screenGame.classList.add("active");
-    document.body.classList.add("viewer-active");
+    document.body.classList.add("viewer-active", "game-active");
     resize();
-    startRound();
   }
 
   document.getElementById("btn-play").addEventListener("click", startGame);
@@ -981,17 +702,6 @@
   document.getElementById("guess-input").addEventListener("keydown", function (e) {
     if (e.key === "Enter") submitGuess();
   });
-
-  document.getElementById("btn-next-round").addEventListener("click", function () {
-    document.getElementById("overlay-round").classList.remove("active");
-    if (state.round >= state.rounds) {
-      document.getElementById("final-total").textContent = state.score + " pts";
-      document.getElementById("overlay-final").classList.add("active");
-    } else {
-      startRound();
-    }
-  });
-
   document.getElementById("btn-play-again").addEventListener("click", function () {
     document.getElementById("overlay-final").classList.remove("active");
     startGame();
@@ -1003,14 +713,10 @@
 
   /* ============================================================
      EDITOR DE NIVELES
-     El jugador pega la URL de su propia foto 360, escribe la palabra
-     y hace click justo encima del objeto mientras mira alrededor.
-     Con eso calculamos el yaw/pitch exactos y generamos el código
-     listo para pegar en niveles.js.
      ============================================================ */
   const raycaster = new THREE.Raycaster();
-  const edLevels = []; // niveles añadidos en esta sesión del editor
-  let edPendingPoint = null; // {yaw, pitch} del último click, antes de "Añadir a la lista"
+  const edLevels = [];
+  let edPendingPoint = null;
 
   function edSetStatus(msg) {
     document.getElementById("editor-status").textContent = msg;
@@ -1034,9 +740,11 @@
     const angles = yawPitchFromDirection(dir);
     edPendingPoint = { yaw: Math.round(angles.yaw * 10) / 10, pitch: Math.round(angles.pitch * 10) / 10 };
 
-    placeHintMarker(edPendingPoint.yaw, edPendingPoint.pitch);
-    hintMarker.visible = true;
-    hintMarker.material.opacity = 0.9;
+    const marker = hintMarkers[0];
+    placeHintMarker(marker, edPendingPoint.yaw, edPendingPoint.pitch);
+    marker.visible = true;
+    marker.material.opacity = 0.9;
+    activeWords = []; // aseguramos que animate() no lo vuelva a ocultar (modo editor no usa activeWords)
 
     const word = document.getElementById("ed-word").value.trim();
     document.getElementById("btn-add-level").disabled = !word;
@@ -1059,19 +767,21 @@
     screenHome.classList.remove("active");
     screenEditor.classList.add("active");
     document.body.classList.add("viewer-active");
+    document.body.classList.remove("game-active");
     resize();
     edSetStatus("Pega la URL de tu foto y pulsa \"Cargar foto\".");
   });
 
   document.getElementById("btn-leave-editor").addEventListener("click", function (e) {
     e.preventDefault();
+    if (hintMarkers[0]) hintMarkers[0].visible = false;
     goHome();
   });
 
   document.getElementById("btn-load-photo").addEventListener("click", function () {
     const url = document.getElementById("ed-image-url").value.trim();
     if (!url) { edSetStatus("Pega antes la URL de una imagen."); return; }
-    hintMarker.visible = false;
+    hintMarkers[0].visible = false;
     edPendingPoint = null;
     document.getElementById("btn-add-level").disabled = true;
     edSetStatus("Cargando foto…");
