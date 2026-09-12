@@ -26,6 +26,7 @@
 */
 
 var NIVELES = [
+    { image: "fotos/perro_paisaje.jfif", word: "MALETIN", yaw: 80.5, pitch: -40.9 },
   // Pega aquí tus niveles generados con el editor, por ejemplo:
   // { image: "panos/salon.jpg", word: "LAMPARA", yaw: 12.4, pitch: 3.2 },
   // { image: "panos/salon.jpg", word: "SOFA", yaw: -88.0, pitch: -10.5 },
