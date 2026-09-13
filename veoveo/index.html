@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Veo o Veo 360 · FCIIN.io</title>
+<title>Veo Veo 360 · FCIIN.io</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -47,6 +47,33 @@
   }
   .brand-link .mark { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 20px; }
   .brand-link .sub { font-size: 13px; color: var(--muted); }
+
+  /* Logo persistente arriba a la izquierda, en todas las pantallas (home, editor, juego),
+     al estilo NEAL.FUN: siempre visible, pegado, y lleva a la portada al hacer click. */
+  #site-brand {
+    position: fixed;
+    top: 16px;
+    left: 18px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+    text-decoration: none;
+    color: var(--text);
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    transition: opacity 0.15s ease;
+  }
+  #site-brand:hover { opacity: 0.75; }
+  #site-brand .sub { font-size: 14px; font-weight: 700; color: var(--muted); }
+  body.editor-active #site-brand { display: none; }
+
+  @media (max-width: 560px) {
+    #site-brand { font-size: 18px; top: 12px; left: 14px; }
+  }
 
   .hero-title { font-size: clamp(36px, 7vw, 60px); font-weight: 800; color: var(--accent); line-height: 1; }
   .hero-eye {
@@ -96,7 +123,7 @@
   #screen-game.active { display: block; }
 
   .hud-top-left {
-    position: fixed; top: 18px; left: 18px; z-index: 10;
+    position: fixed; top: 62px; left: 18px; z-index: 10;
     display: flex; flex-direction: column; gap: 8px;
   }
   .hud-top-right {
@@ -229,11 +256,12 @@
 </head>
 <body>
 
+  <a href="../" id="site-brand"><span class="mark">FCIIN</span><span class="sub">.io</span></a>
+
   <canvas id="pano-canvas"></canvas>
 
   <!-- ============ INICIO ============ -->
   <div class="screen active" id="screen-home">
-    <a href="../" class="brand-link"><span class="mark">FCIIN</span><span class="sub">.io</span></a>
     <h1 class="hero-title">Ve<span class="hero-eye"></span>Veo 360°</h1>
     <p class="hero-tagline">Encuentra los objetos escondidos en una foto de 360º antes de que se acabe el tiempo. Una palabra nueva aparece cada minuto.</p>
 
@@ -681,7 +709,7 @@
     screenGame.classList.remove("active");
     screenEditor.classList.remove("active");
     document.getElementById("overlay-final").classList.remove("active");
-    document.body.classList.remove("viewer-active", "game-active");
+    document.body.classList.remove("viewer-active", "game-active", "editor-active");
     clearInterval(tickTimer);
     gameActive = false;
     editorMode = false;
@@ -766,7 +794,7 @@
     editorMode = true;
     screenHome.classList.remove("active");
     screenEditor.classList.add("active");
-    document.body.classList.add("viewer-active");
+    document.body.classList.add("viewer-active", "editor-active");
     document.body.classList.remove("game-active");
     resize();
     edSetStatus("Pega la URL de tu foto y pulsa \"Cargar foto\".");
