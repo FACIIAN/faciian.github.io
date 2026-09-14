@@ -300,6 +300,8 @@
     border-style: dashed;
     border-color: #c7c7c7;
     box-shadow: none;
+    position: relative;
+    overflow: visible;
   }
   .card.soon:hover {
     transform: none;
@@ -307,11 +309,132 @@
   }
   .card.soon .card-image {
     background: #FAFAFA;
+    position: relative;
+    overflow: hidden;
+  }
+  .card.soon .card-image img {
+    object-fit: contain;
+    padding: 20px;
+    background: #FAFAFA;
+  }
+  .card.soon .construction-art {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
   }
   .card.soon .card-title {
     color: #a9a9a9;
   }
+
+  /* --- Campanita de recepción: centrada sobre el borde superior de la
+     tarjeta, como si estuviera apoyada encima de un mostrador --- */
+  .bell-widget {
+    position: absolute;
+    top: -38px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+  }
+  .bell-btn {
+    width: 52px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.18));
+    transition: transform 0.1s ease;
+    transform-origin: bottom center;
+  }
+  .bell-btn:hover { transform: scale(1.06); }
+  .bell-btn.ringing { animation: bell-press 0.35s ease; }
+  .bell-shadow {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 6px;
+    background: rgba(0,0,0,0.10);
+    border-radius: 50%;
+    z-index: -1;
+  }
+  @keyframes bell-press {
+    0% { transform: scaleY(1); }
+    35% { transform: scaleY(0.82); }
+    60% { transform: scaleY(1.06); }
+    100% { transform: scaleY(1); }
+  }
+  .bell-wave {
+    opacity: 0;
+    transform-origin: center;
+  }
+  .bell-btn.ringing .bell-wave {
+    animation: bell-wave-out 0.6s ease-out;
+  }
+  .bell-btn.ringing .bell-wave.w2 {
+    animation: bell-wave-out 0.6s ease-out 0.1s;
+  }
+  @keyframes bell-wave-out {
+    0% { opacity: 0.9; transform: scale(0.6); }
+    100% { opacity: 0; transform: scale(1.6); }
+  }
+
+  /* Burbuja de diálogo, tipo neal.fun: aparece al tocar, se desvanece sola */
+  .bell-bubble {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    padding: 8px 14px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 6;
+  }
+  .bell-bubble b { color: var(--teal); }
+  .bell-bubble::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #fff;
+  }
+  .bell-bubble::before {
+    content: "";
+    position: absolute;
+    top: calc(100% + 1.5px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-top-color: var(--card-border);
+  }
+  .bell-bubble.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  @media (max-width: 540px) {
+    .bell-widget { top: -32px; }
+    .bell-btn { width: 44px; height: 38px; }
+    .bell-bubble { font-size: 12px; padding: 7px 12px; }
+  }
 </style>
+
 </head>
 <body>
 
@@ -338,17 +461,55 @@
   <main class="grid">
     <a class="card" href="veoveo/" rel="noopener">
       <div class="card-image">
-        <img src="veoveo-thumb.png" alt="Veo o Veo" onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='block';">
+        <img src="veoveo-thumb.png" alt="Veo Veo" onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='block';">
         <span class="placeholder" style="display:none;">Sube veoveo-thumb.png</span>
       </div>
-      <div class="card-title">Veo o Veo</div>
+      <div class="card-title">Veo Veo</div>
     </a>
     <div class="card soon">
-      <div class="card-image"><span class="placeholder">Próximamente</span></div>
+      <div class="card-image">
+        <img src="proximo1-thumb.png" alt="" onerror="this.style.display='none'; this.parentElement.querySelector('.construction-art').style.display='flex';">
+        <div class="construction-art" style="display:none;">
+          <svg viewBox="0 0 64 64" width="46" height="46" fill="none">
+            <rect x="8" y="46" width="48" height="6" rx="2" fill="#C7C7CE"/>
+            <rect x="14" y="20" width="6" height="26" rx="2" fill="#2F7A72"/>
+            <rect x="44" y="20" width="6" height="26" rx="2" fill="#2F7A72"/>
+            <path d="M17 20 L47 20 L47 14 L17 14 Z" fill="#FFD966" stroke="#C99A2E" stroke-width="1.5"/>
+            <rect x="30" y="8" width="4" height="10" fill="#1B1B1B"/>
+            <circle cx="32" cy="6" r="3" fill="#E8604C"/>
+          </svg>
+        </div>
+      </div>
       <div class="card-title">Próximamente</div>
     </div>
-    <div class="card soon">
-      <div class="card-image"><span class="placeholder">Próximamente</span></div>
+    <div class="card soon" id="soon-card-2">
+      <div class="bell-widget" id="bellWidget">
+        <div class="bell-bubble" id="bellBubble">Sonado <b id="bellBubbleCount">0</b> veces hoy</div>
+        <button class="bell-btn" id="bellBtn" title="Toca la campanita" aria-label="Toca la campanita">
+          <svg viewBox="0 0 52 44" width="52" height="44">
+            <circle class="bell-wave w1" cx="26" cy="14" r="10" fill="none" stroke="#2F7A72" stroke-width="1.5"/>
+            <circle class="bell-wave w2" cx="26" cy="14" r="10" fill="none" stroke="#2F7A72" stroke-width="1.5"/>
+            <ellipse cx="26" cy="34" rx="20" ry="4" fill="#B8862F"/>
+            <path d="M8 34 C8 20, 16 12, 26 12 C36 12, 44 20, 44 34 Z" fill="#FFD966" stroke="#1B1B1B" stroke-width="1.5"/>
+            <ellipse cx="26" cy="34" rx="18" ry="3" fill="#C99A2E" stroke="#1B1B1B" stroke-width="1.2"/>
+            <circle cx="26" cy="9" r="4" fill="#FFE18A" stroke="#1B1B1B" stroke-width="1.5"/>
+          </svg>
+        </button>
+        <div class="bell-shadow"></div>
+      </div>
+      <div class="card-image">
+        <img src="proximo2-thumb.png" alt="" onerror="this.style.display='none'; this.parentElement.querySelector('.construction-art').style.display='flex';">
+        <div class="construction-art" style="display:none;">
+          <svg viewBox="0 0 64 64" width="46" height="46" fill="none">
+            <rect x="8" y="46" width="48" height="6" rx="2" fill="#C7C7CE"/>
+            <rect x="14" y="20" width="6" height="26" rx="2" fill="#2F7A72"/>
+            <rect x="44" y="20" width="6" height="26" rx="2" fill="#2F7A72"/>
+            <path d="M17 20 L47 20 L47 14 L17 14 Z" fill="#FFD966" stroke="#C99A2E" stroke-width="1.5"/>
+            <rect x="30" y="8" width="4" height="10" fill="#1B1B1B"/>
+            <circle cx="32" cy="6" r="3" fill="#E8604C"/>
+          </svg>
+        </div>
+      </div>
       <div class="card-title">Próximamente</div>
     </div>
   </main>
@@ -760,6 +921,104 @@
 
     previousCursorAngle = angleDeg;
   });
+})();
+</script>
+
+<script>
+/*
+  Campanita de recepción — contador global compartido por todos los visitantes,
+  con un "ding" real generado por código (Web Audio API, sin archivos de audio).
+  El contador usa Firebase Realtime Database, solo con fetch() normal (sin SDK).
+
+  PARA ACTIVAR EL CONTADOR:
+  1. Ve a https://console.firebase.google.com , crea un proyecto gratis.
+  2. En el menú, entra en "Realtime Database" y créala (modo prueba está bien para empezar).
+  3. Copia la URL que te da (algo como "https://tu-proyecto-default-rtdb.firebaseio.com")
+     y pégala abajo en FIREBASE_DB_URL.
+  4. En las reglas de la base de datos, puedes restringir el acceso solo a esta ruta:
+     { "rules": { "campanita": { ".read": true, ".write": true }, "$other": { ".read": false, ".write": false } } }
+
+  El sonido funciona siempre, aunque no actives el contador.
+*/
+(function () {
+  const FIREBASE_DB_URL = "TU_URL_DE_FIREBASE_AQUI"; // ← sustituye esto
+
+  const btn = document.getElementById('bellBtn');
+  const bubble = document.getElementById('bellBubble');
+  if (!btn || !bubble) return;
+
+  function todayKey() {
+    const d = new Date();
+    return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+  }
+
+  function isConfigured() {
+    return FIREBASE_DB_URL && FIREBASE_DB_URL.indexOf('http') === 0;
+  }
+
+  let hideTimer = null;
+  function showBubble(text) {
+    bubble.innerHTML = text;
+    bubble.classList.add('show');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function () {
+      bubble.classList.remove('show');
+    }, 3000);
+  }
+
+  async function fetchCount() {
+    const res = await fetch(FIREBASE_DB_URL + '/campanita/' + todayKey() + '.json?shallow=true');
+    const data = await res.json();
+    return data ? Object.keys(data).length : 0;
+  }
+
+  let audioCtx = null;
+  function playDing() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      // Campanita pequeña de mostrador: "ting" corto y agudo, no un "dong" largo.
+      const partials = [
+        { freq: 2093, gain: 0.28, dur: 0.28 },  // C7, golpe principal
+        { freq: 3136, gain: 0.10, dur: 0.16 }   // G7, brillo del golpe, se apaga rápido
+      ];
+      partials.forEach(function (partial) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = partial.freq;
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(partial.gain, now + 0.004); // ataque casi instantáneo
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + partial.dur);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + partial.dur + 0.03);
+      });
+    } catch (e) { /* Web Audio no disponible: nos quedamos sin sonido, sin romper nada */ }
+  }
+
+  async function ringBell() {
+    btn.classList.add('ringing');
+    setTimeout(function () { btn.classList.remove('ringing'); }, 600);
+    playDing();
+
+    if (!isConfigured()) {
+      showBubble('¡Ding! <b>(activa Firebase para contar)</b>');
+      return;
+    }
+    try {
+      await fetch(FIREBASE_DB_URL + '/campanita/' + todayKey() + '.json', {
+        method: 'POST',
+        body: 'true'
+      });
+      const n = await fetchCount();
+      showBubble('Sonado <b>' + n + '</b> veces hoy');
+    } catch (e) {
+      showBubble('¡Ding! <b>(sin conexión)</b>');
+    }
+  }
+
+  btn.addEventListener('click', ringBell);
 })();
 </script>
 
