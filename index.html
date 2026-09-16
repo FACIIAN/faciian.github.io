@@ -149,6 +149,43 @@
   .walker .leg-a { animation: walk-a 0.4s linear infinite; }
   .walker .leg-b { animation: walk-b 0.4s linear infinite; }
 
+  .ladder {
+    position: absolute;
+    top: 0;
+    width: 22px;
+    height: 0;
+    z-index: 55;
+    display: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 13px,
+      #8B5A2B 13px, #8B5A2B 17px
+    );
+    transition: height 0.45s cubic-bezier(.3,0,.4,1.4);
+  }
+  .ladder::before, .ladder::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #6b4423;
+  }
+  .ladder::before { left: 0; }
+  .ladder::after { right: 0; }
+
+  /* --- hilo para subir rápido, estilo Spiderman --- */
+  .rope {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 0;
+    z-index: 55;
+    display: none;
+    background: rgba(235, 235, 235, 0.9);
+    box-shadow: 0 0 2px rgba(255,255,255,0.6);
+  }
+
   @keyframes walk-a {
     0%, 100% { transform: rotate(-22deg); }
     50% { transform: rotate(22deg); }
@@ -461,14 +498,14 @@
   <main class="grid">
     <a class="card" href="veoveo/" rel="noopener">
       <div class="card-image">
-        <img src="veoveo-thumb.png" alt="Veo Veo" onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='block';">
-        <span class="placeholder" style="display:none;">Sube veoveo-thumb.png</span>
+        <img src="veoveo/veoveo-thumb.png" alt="Veo Veo" onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='block';">
+        <span class="placeholder" style="display:none;">Sube veoveo/veoveo-thumb.png</span>
       </div>
       <div class="card-title">Veo Veo</div>
     </a>
     <div class="card soon">
       <div class="card-image">
-        <img src="proximo-thumb.png" alt="" onerror="this.style.display='none'; this.parentElement.querySelector('.construction-art').style.display='flex';">
+        <img src="proximo1-thumb.png" alt="" onerror="this.style.display='none'; this.parentElement.querySelector('.construction-art').style.display='flex';">
         <div class="construction-art" style="display:none;">
           <svg viewBox="0 0 64 64" width="46" height="46" fill="none">
             <rect x="8" y="46" width="48" height="6" rx="2" fill="#C7C7CE"/>
@@ -498,7 +535,7 @@
         <div class="bell-shadow"></div>
       </div>
       <div class="card-image">
-        <img src="proximo-thumb.png" alt="" onerror="this.style.display='none'; this.parentElement.querySelector('.construction-art').style.display='flex';">
+        <img src="proximo2-thumb.png" alt="" onerror="this.style.display='none'; this.parentElement.querySelector('.construction-art').style.display='flex';">
         <div class="construction-art" style="display:none;">
           <svg viewBox="0 0 64 64" width="46" height="46" fill="none">
             <rect x="8" y="46" width="48" height="6" rx="2" fill="#C7C7CE"/>
@@ -532,6 +569,10 @@
       <line class="leg-b" x1="12" y1="26" x2="18" y2="38" stroke="#1B1B1B" stroke-width="2"></line>
     </svg>
   </div>
+
+  <div class="ladder" id="ladder"></div>
+
+  <div class="rope" id="rope"></div>
 
 <script>
 (function() {
@@ -733,6 +774,17 @@
     startFall(breakX, breakY, vx, vy);
   }
 
+  function repairBulb() {
+    isBroken = false;
+    isNight = false; // fuerza a re-evaluar si es de noche y volver a parpadear si toca
+    lamp.classList.remove('broken');
+    bulbWrap.style.display = '';
+    angle = 0;
+    angularVelocity = 0;
+    renderLamp();
+    applyBackground();
+  }
+
   bulbWrap.addEventListener('mousedown', function(e) {
     e.preventDefault();
     startDrag(e.clientX, e.clientY);
@@ -783,10 +835,11 @@
     fallLanded = false;
     lastFallTime = null;
 
+    // el suelo es la altura real de la página, nunca más abajo (si no, la
+    // bombilla la obliga a crecer y aparece una barra de scroll de más)
     pageFloor = Math.max(
       document.body.scrollHeight,
-      document.documentElement.scrollHeight,
-      window.innerHeight
+      document.documentElement.scrollHeight
     );
 
     positionFallingBulb();
@@ -835,14 +888,23 @@
 
   /* --- Monigote recogedor --- */
   const walker = document.getElementById('walker');
+  const ladder = document.getElementById('ladder');
+  const rope = document.getElementById('rope');
   const WALK_SPEED = 140;
+  const ROPE_UP_SPEED = 560; // px/s, mucho más rápido: subida tipo Spiderman
   const WALKER_W = 26;
   const WALKER_H = 42;
 
   let walkerX = 0;
+  let walkerY = 0;
   let walkerTargetX = 0;
+  let walkerTargetY = 0;
   let walkerPhase = null;
+  let walkerSpeed = WALK_SPEED;
   let lastWalkerTime = null;
+  let ladderX = 0;
+  let ladderTopY = 0;    // techo (0)
+  let ladderBottomY = 0; // altura de la bombilla original (el anclaje de la lámpara)
 
   function onBulbLanded() {
     setTimeout(function() {
@@ -852,17 +914,51 @@
 
   function positionWalker() {
     walker.style.left = walkerX + 'px';
-    walker.style.top = (pageFloor - WALKER_H - 12) + 'px';
+    walker.style.top = walkerY + 'px';
   }
 
   function spawnWalker(bulbDocX) {
     walkerX = -WALKER_W - 20;
+    walkerY = pageFloor - WALKER_H - 12;
     walker.style.display = 'block';
     positionWalker();
     walkerPhase = 'approach';
+    walkerSpeed = WALK_SPEED;
     walkerTargetX = bulbDocX - WALKER_W / 2;
+    walkerTargetY = walkerY; // se mueve por el suelo, no sube ni baja todavía
     lastWalkerTime = null;
     requestAnimationFrame(walkerTick);
+  }
+
+  // cae la escalera desde el techo hasta la lámpara
+  function spawnLadder() {
+    const anchor = getAnchorPoint();
+    ladderX = anchor.x + window.scrollX - 11; // centrada, un pelín a un lado del reloj
+    ladderTopY = 0;
+    ladderBottomY = anchor.y + window.scrollY;
+
+    ladder.style.left = ladderX + 'px';
+    ladder.style.height = '0px';
+    ladder.style.display = 'block';
+
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        ladder.style.height = (ladderBottomY - ladderTopY) + 'px';
+      });
+    });
+
+    setTimeout(function() {
+      walkerX = ladderX - (WALKER_W - 22) / 2;
+      walkerY = ladderTopY - WALKER_H + 10;
+      walker.style.display = 'block';
+      positionWalker();
+      walkerPhase = 'ladder-down';
+      walkerSpeed = WALK_SPEED;
+      walkerTargetX = walkerX;
+      walkerTargetY = ladderBottomY - WALKER_H + 14;
+      lastWalkerTime = null;
+      requestAnimationFrame(walkerTick);
+    }, 500);
   }
 
   function walkerTick(timestamp) {
@@ -870,28 +966,95 @@
     const dt = Math.min((timestamp - lastWalkerTime) / 1000, 0.05);
     lastWalkerTime = timestamp;
 
-    const dir = walkerTargetX >= walkerX ? 1 : -1;
-    walkerX += WALK_SPEED * dt * dir;
-    const reached = (dir > 0 && walkerX >= walkerTargetX) || (dir < 0 && walkerX <= walkerTargetX);
+    const dx = walkerTargetX - walkerX;
+    const dy = walkerTargetY - walkerY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (reached) {
+    if (dist <= walkerSpeed * dt) {
       walkerX = walkerTargetX;
+      walkerY = walkerTargetY;
       positionWalker();
-
-      if (walkerPhase === 'approach') {
-        fallingBulb.style.display = 'none';
-        walkerPhase = 'carry';
-        walkerTargetX = window.innerWidth + WALKER_W + 20;
-        lastWalkerTime = null;
-        requestAnimationFrame(walkerTick);
-      } else {
-        walker.style.display = 'none';
-      }
+      onWalkerArrive();
       return;
     }
 
+    walkerX += (dx / dist) * walkerSpeed * dt;
+    walkerY += (dy / dist) * walkerSpeed * dt;
     positionWalker();
+
+    // mientras sube por el hilo, este se retrae con él (el extremo de abajo le sigue)
+    if (walkerPhase === 'rope-up') {
+      rope.style.height = Math.max(walkerY, 0) + 'px';
+    }
+
     requestAnimationFrame(walkerTick);
+  }
+
+  function onWalkerArrive() {
+    if (walkerPhase === 'approach') {
+      // recoge la bombilla del suelo y camina hacia la derecha
+      fallingBulb.style.display = 'none';
+      walkerPhase = 'carry';
+      walkerTargetX = window.innerWidth - 46;
+      walkerTargetY = walkerY;
+      lastWalkerTime = null;
+      requestAnimationFrame(walkerTick);
+
+    } else if (walkerPhase === 'carry') {
+      // está llegando al borde derecho: dispara un hilo hacia arriba
+      const ropeX = walkerX + WALKER_W / 2 - 1;
+      rope.style.left = ropeX + 'px';
+      rope.style.height = '0px';
+      rope.style.display = 'block';
+
+      // el hilo "dispara" hacia arriba rápido, como saliendo del lanzador
+      let shootStart = null;
+      const SHOOT_SPEED = 900; // px/s, más rápido que la subida del monigote
+      function shootTick(ts) {
+        if (shootStart === null) shootStart = ts;
+        const h = Math.min((ts - shootStart) / 1000 * SHOOT_SPEED, walkerY);
+        rope.style.height = h + 'px';
+        if (h < walkerY) requestAnimationFrame(shootTick);
+      }
+      requestAnimationFrame(shootTick);
+
+      setTimeout(function() {
+        // se agarra y sube rapidísimo, estilo Spiderman
+        walkerPhase = 'rope-up';
+        walkerSpeed = ROPE_UP_SPEED;
+        walkerTargetX = walkerX;
+        walkerTargetY = -(WALKER_H + 30);
+        lastWalkerTime = null;
+        requestAnimationFrame(walkerTick);
+      }, 320);
+
+    } else if (walkerPhase === 'rope-up') {
+      // ha desaparecido por arriba, hilo recogido del todo: la escalera llega enseguida
+      walker.style.display = 'none';
+      rope.style.display = 'none';
+      walkerSpeed = WALK_SPEED;
+      setTimeout(spawnLadder, 1200);
+
+    } else if (walkerPhase === 'ladder-down') {
+      // ha bajado hasta la altura de la lámpara: repone la bombilla
+      repairBulb();
+      walkerPhase = 'placing';
+      setTimeout(function() {
+        walkerPhase = 'ladder-up';
+        walkerTargetX = ladderX - (WALKER_W - 22) / 2;
+        walkerTargetY = ladderTopY - WALKER_H + 10;
+        lastWalkerTime = null;
+        requestAnimationFrame(walkerTick);
+      }, 500);
+
+    } else if (walkerPhase === 'ladder-up') {
+      // vuelve arriba, recoge la escalera y se va
+      ladder.style.height = '0px';
+      setTimeout(function() {
+        ladder.style.display = 'none';
+        walker.style.display = 'none';
+      }, 450);
+    }
   }
 
   /* --- Reloj manual --- */
